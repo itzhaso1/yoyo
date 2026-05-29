@@ -94,14 +94,18 @@
 const sessionClosed = @json($session->isClosed());
 const csrf = document.querySelector('meta[name="csrf-token"]').content;
 const ordersBase = '{{ url('/orders') }}';
+function escapeHtml(value) {
+    return String(value).replace(/[&<>"']/g, (char) => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;'}[char]));
+}
 function orderCard(order) {
     const disabled = sessionClosed ? 'disabled' : '';
+    const safeName = escapeHtml(order.item_name);
     return `
         <div class="order-card">
             <form method="POST" action="${ordersBase}/${order.id}" style="display:contents;">
                 <input type="hidden" name="_token" value="${csrf}">
                 <input type="hidden" name="_method" value="PATCH">
-                <input class="field" name="item_name" value="${order.item_name.replace(/"/g, '&quot;')}" ${disabled}>
+                <input class="field" name="item_name" value="${safeName}" ${disabled}>
                 <input class="field" type="number" step="0.01" min="0" name="price" value="${order.price}" ${disabled}>
                 <input class="field" type="number" min="1" name="quantity" value="${order.quantity}" ${disabled}>
                 <strong>${order.line_total}</strong>

@@ -11,15 +11,17 @@ class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
-        User::updateOrCreate(
+        $admin = User::firstOrCreate(
             ['username' => 'admin'],
             ['name' => 'مدير النظام', 'email' => 'admin@example.com', 'role' => 'admin', 'password' => 'admin123']
         );
+        $admin->update(['name' => 'مدير النظام', 'email' => 'admin@example.com', 'role' => 'admin']);
 
-        User::updateOrCreate(
+        $cashier = User::firstOrCreate(
             ['username' => 'cashier'],
             ['name' => 'الكاشير', 'email' => 'cashier@example.com', 'role' => 'cashier', 'password' => 'cashier123']
         );
+        $cashier->update(['name' => 'الكاشير', 'email' => 'cashier@example.com', 'role' => 'cashier']);
 
         $tables = [
             ['name' => 'طاولة 1', 'section' => 'indoor', 'seats' => 4, 'sort_order' => 1],

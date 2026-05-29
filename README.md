@@ -49,8 +49,25 @@ DB_PASSWORD=your_password
 ثم شغل migrations والبيانات الأولية من SSH أو Terminal المتاح في الاستضافة:
 
 ```bash
-php artisan migrate --seed --force
+php artisan migrate --force
+php artisan db:seed --force
+php artisan optimize:clear
 php artisan optimize
 ```
 
+> مهم جداً: لا تستخدم `php artisan migrate:fresh` أو `php artisan migrate:fresh --seed` على السيرفر الحقيقي، لأن هذا الأمر يحذف كل الجداول والمستخدمين والفواتير ثم يعيد إنشاءها.
+
 اجعل Document Root يشير إلى مجلد `public`.
+
+## تحديث المشروع على Hostinger عبر SSH
+
+```bash
+cd /path/to/project
+git pull origin cursor/laravel-cafe-pos-8336
+composer install --no-dev --optimize-autoloader
+php artisan migrate --force
+php artisan optimize:clear
+php artisan optimize
+```
+
+إذا كان السيرفر لا يحتوي Git، ارفع الملفات الجديدة من جهازك ثم شغل أوامر Composer و Artisan السابقة.

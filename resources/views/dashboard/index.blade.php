@@ -15,6 +15,19 @@
         </div>
     </section>
 
+    <section class="panel">
+        <h2>تغيير كلمة المرور</h2>
+        <p class="muted">غيّر كلمة مرور حسابك من هنا. لن يتم حذف الحساب عند تسجيل الخروج.</p>
+        <form method="POST" action="{{ route('profile.password.update') }}" class="grid grid-3">
+            @csrf
+            @method('PATCH')
+            <input class="field" type="password" name="current_password" placeholder="كلمة المرور الحالية" required autocomplete="current-password">
+            <input class="field" type="password" name="password" placeholder="كلمة المرور الجديدة" required autocomplete="new-password">
+            <input class="field" type="password" name="password_confirmation" placeholder="تأكيد كلمة المرور الجديدة" required autocomplete="new-password">
+            <button class="btn btn-primary" type="submit">حفظ كلمة المرور</button>
+        </form>
+    </section>
+
     @if(auth()->user()->isAdmin())
         <section class="panel">
             <h2>إضافة طاولة من لوحة الأدمن</h2>
@@ -29,6 +42,11 @@
                 <input class="field" type="number" name="seats" placeholder="عدد الكراسي" min="1">
                 <button class="btn btn-primary" type="submit">إضافة طاولة</button>
             </form>
+        </section>
+
+        <section class="panel">
+            <h2>ملاحظة مهمة للسيرفر</h2>
+            <p class="muted">لا تستخدم أمر <strong>migrate:fresh</strong> على Hostinger لأنه يمسح كل الجداول والمستخدمين. استخدم فقط <strong>php artisan migrate --force</strong>.</p>
         </section>
     @endif
 </div>
@@ -51,16 +69,34 @@
                         </button>
                     </form>
                     @if(auth()->user()->isAdmin())
-                        <form method="POST" action="{{ route('tables.update', $table) }}" style="display:flex;gap:6px;margin-top:8px;">
-                            @csrf
-                            @method('PATCH')
-                            <select name="status" style="padding:7px;border-radius:9px;" aria-label="حالة الطاولة">
-                                @foreach($statuses as $status => $label)
-                                    <option value="{{ $status }}" @selected($table->status === $status)>{{ $label }}</option>
-                                @endforeach
-                            </select>
-                            <button class="btn btn-small" type="submit">حفظ الحالة</button>
-                        </form>
+                        <div style="margin-top:10px;padding:10px;border:1px solid var(--line);border-radius:14px;background:#101827;">
+                            <form method="POST" action="{{ route('tables.update', $table) }}" class="grid" style="gap:8px;">
+                                @csrf
+                                @method('PATCH')
+                                <input class="field" name="name" value="{{ $table->name }}" placeholder="اسم الطاولة" required>
+                                <select name="section" aria-label="القسم">
+                                    @foreach($sections as $key => $label)
+                                        <option value="{{ $key }}" @selected($table->section === $key)>{{ $label }}</option>
+                                    @endforeach
+                                </select>
+                                <input class="field" type="number" name="seats" value="{{ $table->seats }}" placeholder="عدد الكراسي" min="1">
+                                <select name="status" aria-label="حالة الطاولة">
+                                    @foreach($statuses as $status => $label)
+                                        <option value="{{ $status }}" @selected($table->status === $status)>{{ $label }}</option>
+                                    @endforeach
+                                </select>
+                                <input class="field" type="number" name="sort_order" value="{{ $table->sort_order }}" placeholder="ترتيب العرض" min="0">
+                                <button class="btn btn-small" type="submit">حفظ تعديل الطاولة</button>
+                            </form>
+                            <form method="POST" action="{{ route('tables.destroy', $table) }}" style="margin-top:8px;" onsubmit="return confirm('هل أنت متأكد من حذف هذه الطاولة؟');">
+                                @csrf
+                                @method('DELETE')
+                                <button class="btn btn-danger btn-small" type="submit" @disabled((bool) $table->activeSession)>حذف الطاولة</button>
+                                @if($table->activeSession)
+                                    <small class="muted" style="display:block;margin-top:6px;">لا يمكن حذف طاولة عليها جلسة مفتوحة.</small>
+                                @endif
+                            </form>
+                        </div>
                     @endif
                 </div>
             @empty

@@ -6,6 +6,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\MenuItemController;
 use App\Http\Controllers\OrderItemController;
 use App\Http\Controllers\PosTableController;
+use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ReportController;
 use Illuminate\Support\Facades\Route;
 
@@ -16,6 +17,7 @@ Route::middleware('guest')->group(function (): void {
 
 Route::middleware('auth')->group(function (): void {
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+    Route::patch('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password.update');
 
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/tables/state', [DashboardController::class, 'state'])->name('tables.state');
@@ -34,6 +36,7 @@ Route::middleware('auth')->group(function (): void {
     Route::middleware('admin')->group(function (): void {
         Route::post('/tables', [PosTableController::class, 'store'])->name('tables.store');
         Route::patch('/tables/{posTable}', [PosTableController::class, 'update'])->name('tables.update');
+        Route::delete('/tables/{posTable}', [PosTableController::class, 'destroy'])->name('tables.destroy');
         Route::resource('menu-items', MenuItemController::class)->only(['index', 'store', 'update', 'destroy']);
         Route::get('/reports/daily', [ReportController::class, 'daily'])->name('reports.daily');
     });

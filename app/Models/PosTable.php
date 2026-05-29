@@ -3,9 +3,12 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class PosTable extends Model
 {
+    use SoftDeletes;
+
     public const STATUS_FREE = 'free';
 
     public const STATUS_BUSY = 'busy';

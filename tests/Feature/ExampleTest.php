@@ -8,6 +8,7 @@ use App\Models\OrderItem;
 use App\Models\PosTable;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
 
 class ExampleTest extends TestCase
@@ -57,6 +58,63 @@ class ExampleTest extends TestCase
             'name' => 'قهوة اختبار',
             'category' => 'drink',
         ]);
+    }
+
+    public function test_admin_can_update_and_delete_tables(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $table = PosTable::create(['name' => 'طاولة قديمة', 'section' => 'indoor', 'status' => 'free', 'seats' => 2]);
+
+        $this->actingAs($admin)
+            ->patch(route('tables.update', $table), [
+                'name' => 'طاولة جديدة',
+                'section' => 'outdoor',
+                'status' => 'reserved',
+                'seats' => 4,
+                'sort_order' => 9,
+            ])->assertSessionHasNoErrors()->assertRedirect();
+
+        $this->assertDatabaseHas(PosTable::class, [
+            'id' => $table->id,
+            'name' => 'طاولة جديدة',
+            'section' => 'outdoor',
+            'status' => 'reserved',
+            'seats' => 4,
+            'sort_order' => 9,
+        ]);
+
+        $this->actingAs($admin)
+            ->delete(route('tables.destroy', $table))
+            ->assertSessionHasNoErrors()->assertRedirect();
+
+        $this->assertSoftDeleted('pos_tables', ['id' => $table->id]);
+    }
+
+    public function test_user_can_change_password_and_logout_keeps_admin_account(): void
+    {
+        $admin = User::factory()->admin()->create([
+            'username' => 'admin',
+            'email' => 'admin@example.com',
+            'password' => 'old-password',
+        ]);
+
+        $this->actingAs($admin)
+            ->patch(route('profile.password.update'), [
+                'current_password' => 'old-password',
+                'password' => 'new-password',
+                'password_confirmation' => 'new-password',
+            ])->assertSessionHasNoErrors()->assertRedirect();
+
+        $this->assertTrue(Hash::check('new-password', $admin->fresh()->password));
+
+        $this->actingAs($admin)->post(route('logout'))->assertRedirect(route('login'));
+        $this->assertDatabaseHas(User::class, ['id' => $admin->id, 'username' => 'admin']);
+        $this->assertGuest();
+
+        $this->post(route('login.store'), [
+            'login' => 'admin@example.com',
+            'password' => 'new-password',
+        ])->assertRedirect(route('dashboard'));
     }
 
     public function test_cashier_can_open_table_add_order_and_close_session(): void

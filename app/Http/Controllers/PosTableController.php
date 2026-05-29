@@ -13,7 +13,7 @@ class PosTableController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $data = $request->validate([
-            'name' => ['required', 'string', 'max:50', 'unique:pos_tables,name'],
+            'name' => ['required', 'string', 'max:50', Rule::unique('pos_tables', 'name')->whereNull('deleted_at')],
             'section' => ['required', Rule::in(['indoor', 'outdoor', 'vip'])],
             'status' => ['nullable', Rule::in(['free', 'busy', 'reserved', 'billing'])],
             'seats' => ['nullable', 'integer', 'min:1', 'max:99'],
@@ -29,7 +29,7 @@ class PosTableController extends Controller
     public function update(Request $request, PosTable $posTable): RedirectResponse
     {
         $data = $request->validate([
-            'name' => ['sometimes', 'required', 'string', 'max:50', Rule::unique('pos_tables', 'name')->ignore($posTable)],
+            'name' => ['sometimes', 'required', 'string', 'max:50', Rule::unique('pos_tables', 'name')->whereNull('deleted_at')->ignore($posTable)],
             'section' => ['sometimes', 'required', Rule::in(['indoor', 'outdoor', 'vip'])],
             'status' => ['sometimes', 'required', Rule::in(['free', 'busy', 'reserved', 'billing'])],
             'seats' => ['nullable', 'integer', 'min:1', 'max:99'],
@@ -44,5 +44,17 @@ class PosTableController extends Controller
         OperationLog::record('تحديث طاولة', $posTable, $data);
 
         return back()->with('status', 'تم تحديث الطاولة.');
+    }
+
+    public function destroy(PosTable $posTable): RedirectResponse
+    {
+        if ($posTable->activeSession()->exists()) {
+            return back()->withErrors(['table' => 'لا يمكن حذف طاولة عليها جلسة مفتوحة. أغلق الجلسة أولاً.']);
+        }
+
+        OperationLog::record('حذف طاولة', $posTable, ['الاسم' => $posTable->name]);
+        $posTable->delete();
+
+        return back()->with('status', 'تم حذف الطاولة من لوحة الكاشير.');
     }
 }

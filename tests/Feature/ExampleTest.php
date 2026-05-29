@@ -159,4 +159,48 @@ class ExampleTest extends TestCase
         $this->actingAs($admin)->get(route('reports.daily'))->assertOk();
         $this->actingAs($cashier)->get(route('menu-items.index'))->assertForbidden();
     }
+
+    public function test_dashboard_shows_admin_table_controls_only_to_admins(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $cashier = User::factory()->create(['role' => 'cashier']);
+        PosTable::create(['name' => 'طاولة الواجهة', 'section' => 'indoor', 'status' => 'free']);
+
+        $this->actingAs($admin)
+            ->get(route('dashboard'))
+            ->assertOk()
+            ->assertSee('أدوات تعديل وحذف الطاولات مفعلة')
+            ->assertSee('حذف الطاولة');
+
+        $this->actingAs($cashier)
+            ->get(route('dashboard'))
+            ->assertOk()
+            ->assertSee('تعديل وحذف الطاولات يظهر فقط لحساب الأدمن')
+            ->assertDontSee('حذف الطاولة');
+    }
+
+    public function test_seed_adds_requested_drink_menu_items(): void
+    {
+        $this->seed();
+
+        $this->assertDatabaseHas(MenuItem::class, [
+            'name' => 'كوكتيل - أفوكادو سنشل مع قشطة',
+            'category' => 'drink',
+        ]);
+
+        $this->assertDatabaseHas(MenuItem::class, [
+            'name' => 'سموذي - بطيخ',
+            'category' => 'drink',
+        ]);
+
+        $this->assertDatabaseHas(MenuItem::class, [
+            'name' => 'موهيتو طاقة - لوجو بلو',
+            'category' => 'drink',
+        ]);
+
+        $this->assertDatabaseHas(MenuItem::class, [
+            'name' => 'شيك - ليمون نعناع',
+            'category' => 'drink',
+        ]);
+    }
 }

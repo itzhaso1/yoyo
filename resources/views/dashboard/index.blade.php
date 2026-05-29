@@ -7,6 +7,11 @@
     <section class="panel">
         <h1>لوحة الطاولات</h1>
         <p class="muted">اضغط على أي طاولة لفتح جلسة جديدة أو متابعة الجلسة المفتوحة.</p>
+        @if(auth()->user()->isAdmin())
+            <div class="alert alert-ok" style="margin:12px 0;">أنت داخل بحساب أدمن: أدوات تعديل وحذف الطاولات مفعلة أسفل كل طاولة.</div>
+        @else
+            <div class="alert alert-error" style="margin:12px 0;">أنت داخل بحساب كاشير: تعديل وحذف الطاولات يظهر فقط لحساب الأدمن.</div>
+        @endif
         <div class="legend">
             <span><i class="dot" style="background:#22c55e"></i> متاحة</span>
             <span><i class="dot" style="background:#ef4444"></i> مشغولة</span>

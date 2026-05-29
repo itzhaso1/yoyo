@@ -270,4 +270,39 @@ class ExampleTest extends TestCase
             ->assertOk()
             ->assertSee('طاولة محذوفة سابقاً');
     }
+
+    public function test_daily_report_shows_type_totals_and_separate_shisha_breakdown(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $table = PosTable::create(['name' => 'طاولة التقرير', 'section' => 'indoor', 'status' => 'free']);
+        $session = CafeSession::create([
+            'user_id' => $admin->id,
+            'pos_table_id' => $table->id,
+            'invoice_number' => 'INV-REPORT-GROUPS',
+            'status' => 'closed',
+            'opened_at' => now()->subHour(),
+            'closed_at' => now(),
+            'subtotal' => 20,
+            'total_price' => 20,
+        ]);
+
+        $shisha = MenuItem::create(['name' => 'شيشة نعناع', 'category' => 'shisha', 'price' => 10, 'is_active' => true]);
+        $cocktail = MenuItem::create(['name' => 'كوكتيل - منجا', 'category' => 'drink', 'price' => 2, 'is_active' => true]);
+        $coffee = MenuItem::create(['name' => 'قهوة باردة - ايس لاتيه', 'category' => 'drink', 'price' => 1.75, 'is_active' => true]);
+
+        $session->orderItems()->create(['menu_item_id' => $shisha->id, 'item_name' => $shisha->name, 'price' => 10, 'quantity' => 2]);
+        $session->orderItems()->create(['menu_item_id' => $cocktail->id, 'item_name' => $cocktail->name, 'price' => 2, 'quantity' => 3]);
+        $session->orderItems()->create(['menu_item_id' => $coffee->id, 'item_name' => $coffee->name, 'price' => 1.75, 'quantity' => 1]);
+
+        $this->actingAs($admin)
+            ->get(route('reports.daily'))
+            ->assertOk()
+            ->assertSee('إجمالي الكميات حسب النوع')
+            ->assertSeeInOrder(['كوكتيل', '3'])
+            ->assertSeeInOrder(['قهوة', '1'])
+            ->assertSeeInOrder(['شيشة', '2'])
+            ->assertSee('الشيشة - تفصيل مستقل')
+            ->assertSee('إجمالي الشيشة: 2')
+            ->assertSeeInOrder(['شيشة نعناع', '2']);
+    }
 }

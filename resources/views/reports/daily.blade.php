@@ -21,6 +21,37 @@
 
 <div class="grid grid-2" style="margin-top:18px;align-items:start;">
     <section class="panel">
+        <h2>إجمالي الكميات حسب النوع</h2>
+        <table class="data-table">
+            <thead><tr><th>النوع</th><th>العدد</th><th>المبيعات</th></tr></thead>
+            <tbody>
+                @forelse($typeTotals as $group)
+                    <tr><td>{{ $group['label'] }}</td><td>{{ $group['quantity'] }}</td><td>{{ number_format($group['revenue'], 2) }}</td></tr>
+                @empty
+                    <tr><td colspan="3" class="muted">لا توجد مبيعات لهذا اليوم.</td></tr>
+                @endforelse
+            </tbody>
+        </table>
+    </section>
+
+    <section class="panel">
+        <h2>الشيشة - تفصيل مستقل</h2>
+        <p class="muted">إجمالي الشيشة: {{ $shishaSummary['quantity'] }} | المبيعات: {{ number_format($shishaSummary['revenue'], 2) }}</p>
+        <table class="data-table">
+            <thead><tr><th>نوع الشيشة</th><th>العدد</th><th>المبيعات</th></tr></thead>
+            <tbody>
+                @forelse($shishaItems as $item)
+                    <tr><td>{{ $item->item_name }}</td><td>{{ $item->total_quantity }}</td><td>{{ number_format($item->revenue, 2) }}</td></tr>
+                @empty
+                    <tr><td colspan="3" class="muted">لا توجد مبيعات شيشة لهذا اليوم.</td></tr>
+                @endforelse
+            </tbody>
+        </table>
+    </section>
+</div>
+
+<div class="grid grid-2" style="margin-top:18px;align-items:start;">
+    <section class="panel">
         <h2>أكثر الأصناف مبيعاً</h2>
         <table class="data-table">
             <thead><tr><th>الصنف</th><th>الكمية</th><th>المبيعات</th></tr></thead>

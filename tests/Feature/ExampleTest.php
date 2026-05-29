@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\CafeSession;
+use App\Models\DeliveryOrder;
 use App\Models\MenuItem;
 use App\Models\OrderItem;
 use App\Models\PosTable;
@@ -427,7 +428,7 @@ class ExampleTest extends TestCase
                 'notes' => 'بدون بصل',
             ])->assertSessionHasNoErrors()->assertRedirect();
 
-        $order = \App\Models\DeliveryOrder::firstOrFail();
+        $order = DeliveryOrder::firstOrFail();
         $this->assertEquals(7.00, (float) $order->total_price);
 
         $this->actingAs($cashier)
@@ -463,5 +464,4 @@ class ExampleTest extends TestCase
 
         $this->assertDatabaseHas('order_items', ['cafe_session_id' => $session->id, 'item_name' => 'كوكتيل - اجاكس']);
     }
-
 }

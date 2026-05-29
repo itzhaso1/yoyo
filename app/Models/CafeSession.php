@@ -43,12 +43,19 @@ class CafeSession extends Model
 
     public function tableName(): string
     {
-        return $this->table?->name ?? 'طاولة محذوفة';
+        return $this->relatedTable()?->name ?? 'طاولة محذوفة';
     }
 
     public function tableStatus(): string
     {
-        return $this->table?->status ?? 'free';
+        return $this->relatedTable()?->status ?? 'free';
+    }
+
+    private function relatedTable(): ?PosTable
+    {
+        return $this->relationLoaded('table')
+            ? $this->getRelation('table')
+            : $this->table()->first();
     }
 
     public function orderItems()

@@ -393,4 +393,75 @@ class ExampleTest extends TestCase
             ->assertOk()
             ->assertJsonPath('tables.0.active_session_opened_at', $session->opened_at->toIso8601String());
     }
+
+    public function test_settings_page_contains_moved_admin_and_password_controls(): void
+    {
+        $admin = User::factory()->admin()->create();
+
+        $this->actingAs($admin)
+            ->get(route('dashboard'))
+            ->assertOk()
+            ->assertDontSee('ملاحظة مهمة للسيرفر')
+            ->assertDontSee('كلمة المرور الحالية');
+
+        $this->actingAs($admin)
+            ->get(route('settings.index'))
+            ->assertOk()
+            ->assertSee('تغيير كلمة المرور')
+            ->assertSee('إضافة طاولة من لوحة الأدمن')
+            ->assertSee('ملاحظة مهمة للسيرفر');
+    }
+
+    public function test_delivery_orders_can_be_created_and_status_updated(): void
+    {
+        $cashier = User::factory()->create(['role' => 'cashier']);
+
+        $this->actingAs($cashier)
+            ->post(route('delivery-orders.store'), [
+                'customer_name' => 'زبون توصيل',
+                'phone' => '123',
+                'location' => 'الشارع الرئيسي',
+                'item_name' => 'وجبة توصيل',
+                'quantity' => 2,
+                'price' => 3.5,
+                'notes' => 'بدون بصل',
+            ])->assertSessionHasNoErrors()->assertRedirect();
+
+        $order = \App\Models\DeliveryOrder::firstOrFail();
+        $this->assertEquals(7.00, (float) $order->total_price);
+
+        $this->actingAs($cashier)
+            ->get(route('delivery-orders.index'))
+            ->assertOk()
+            ->assertSee('وجبة توصيل')
+            ->assertSee('الشارع الرئيسي');
+
+        $this->actingAs($cashier)
+            ->patch(route('delivery-orders.update', $order), ['status' => 'completed'])
+            ->assertRedirect();
+
+        $this->assertDatabaseHas('delivery_orders', ['id' => $order->id, 'status' => 'completed']);
+    }
+
+    public function test_order_store_supports_ajax_without_redirect(): void
+    {
+        $cashier = User::factory()->create(['role' => 'cashier']);
+        $table = PosTable::create(['name' => 'طاولة اجاكس', 'section' => 'indoor', 'status' => 'busy']);
+        $session = CafeSession::create([
+            'user_id' => $cashier->id,
+            'pos_table_id' => $table->id,
+            'invoice_number' => 'INV-AJAX',
+            'status' => 'open',
+            'opened_at' => now(),
+        ]);
+        $item = MenuItem::create(['name' => 'كوكتيل - اجاكس', 'category' => 'drink', 'price' => 2, 'is_active' => true]);
+
+        $this->actingAs($cashier)
+            ->postJson(route('orders.store', $session), ['menu_item_id' => $item->id, 'quantity' => 1])
+            ->assertOk()
+            ->assertJsonPath('message', 'تمت إضافة الطلب.');
+
+        $this->assertDatabaseHas('order_items', ['cafe_session_id' => $session->id, 'item_name' => 'كوكتيل - اجاكس']);
+    }
+
 }

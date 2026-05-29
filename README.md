@@ -1,4 +1,4 @@
-# نظام كاشير المقهى - Laravel + MySQL
+# بيت جدي - Laravel + MySQL
 
 نظام POS احترافي لمقهى مبني بـ Laravel، مناسب للعمل على استضافة تدعم PHP/MySQL مثل Hostinger.
 

@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'تسجيل الدخول - نظام كاشير المقهى')
+@section('title', 'تسجيل الدخول - بيت جدي')
 
 @section('content')
 <div class="panel" style="max-width:460px;margin:70px auto;">

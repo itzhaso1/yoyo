@@ -1,60 +1,23 @@
 @extends('layouts.app')
 
-@section('title', 'الطاولات - نظام كاشير المقهى')
+@section('title', 'الطاولات - بيت جدي')
 
 @section('content')
-<div class="grid grid-2">
-    <section class="panel">
-        <h1>لوحة الطاولات</h1>
-        <p class="muted">اضغط على أي طاولة لفتح جلسة جديدة أو متابعة الجلسة المفتوحة.</p>
-        @if(auth()->user()->isAdmin())
-            <div class="alert alert-ok" style="margin:12px 0;">أنت داخل بحساب أدمن: أدوات تعديل وحذف الطاولات مفعلة أسفل كل طاولة.</div>
-        @else
-            <div class="alert alert-error" style="margin:12px 0;">أنت داخل بحساب كاشير: تعديل وحذف الطاولات يظهر فقط لحساب الأدمن.</div>
-        @endif
-        <div class="legend">
-            <span><i class="dot" style="background:#22c55e"></i> متاحة</span>
-            <span><i class="dot" style="background:#ef4444"></i> مشغولة</span>
-            <span><i class="dot" style="background:#f59e0b"></i> محجوزة</span>
-            <span><i class="dot" style="background:#3b82f6"></i> قيد الحساب</span>
-        </div>
-    </section>
-
-    <section class="panel">
-        <h2>تغيير كلمة المرور</h2>
-        <p class="muted">غيّر كلمة مرور حسابك من هنا. لن يتم حذف الحساب عند تسجيل الخروج.</p>
-        <form method="POST" action="{{ route('profile.password.update') }}" class="grid grid-3">
-            @csrf
-            @method('PATCH')
-            <input class="field" type="password" name="current_password" placeholder="كلمة المرور الحالية" required autocomplete="current-password">
-            <input class="field" type="password" name="password" placeholder="كلمة المرور الجديدة" required autocomplete="new-password">
-            <input class="field" type="password" name="password_confirmation" placeholder="تأكيد كلمة المرور الجديدة" required autocomplete="new-password">
-            <button class="btn btn-primary" type="submit">حفظ كلمة المرور</button>
-        </form>
-    </section>
-
+<section class="panel">
+    <h1>لوحة الطاولات - بيت جدي</h1>
+    <p class="muted">اضغط على أي طاولة لفتح جلسة جديدة أو متابعة الجلسة المفتوحة.</p>
     @if(auth()->user()->isAdmin())
-        <section class="panel">
-            <h2>إضافة طاولة من لوحة الأدمن</h2>
-            <form method="POST" action="{{ route('tables.store') }}" class="grid grid-4">
-                @csrf
-                <input class="field" name="name" placeholder="اسم الطاولة" required>
-                <select name="section" aria-label="القسم">
-                    @foreach($sections as $key => $label)
-                        <option value="{{ $key }}">{{ $label }}</option>
-                    @endforeach
-                </select>
-                <input class="field" type="number" name="seats" placeholder="عدد الكراسي" min="1">
-                <button class="btn btn-primary" type="submit">إضافة طاولة</button>
-            </form>
-        </section>
-
-        <section class="panel">
-            <h2>ملاحظة مهمة للسيرفر</h2>
-            <p class="muted">لا تستخدم أمر <strong>migrate:fresh</strong> على Hostinger لأنه يمسح كل الجداول والمستخدمين. استخدم فقط <strong>php artisan migrate --force</strong>.</p>
-        </section>
+        <div class="alert alert-ok" style="margin:12px 0;">أنت داخل بحساب أدمن: أدوات تعديل وحذف الطاولات مفعلة أسفل كل طاولة. إضافة طاولة وتغيير كلمة المرور انتقلت إلى صفحة الإعدادات.</div>
+    @else
+        <div class="alert alert-error" style="margin:12px 0;">أنت داخل بحساب كاشير: تعديل وحذف الطاولات يظهر فقط لحساب الأدمن.</div>
     @endif
-</div>
+    <div class="legend">
+        <span><i class="dot" style="background:#22c55e"></i> متاحة</span>
+        <span><i class="dot" style="background:#ef4444"></i> مشغولة</span>
+        <span><i class="dot" style="background:#f59e0b"></i> محجوزة</span>
+        <span><i class="dot" style="background:#3b82f6"></i> قيد الحساب</span>
+    </div>
+</section>
 
 @foreach($sections as $sectionKey => $sectionLabel)
     <section class="panel" style="margin-top:18px;">

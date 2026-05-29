@@ -6,12 +6,13 @@ use App\Models\CafeSession;
 use App\Models\MenuItem;
 use App\Models\OperationLog;
 use App\Models\OrderItem;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 
 class OrderItemController extends Controller
 {
-    public function store(Request $request, CafeSession $cafeSession): RedirectResponse
+    public function store(Request $request, CafeSession $cafeSession): RedirectResponse|JsonResponse
     {
         $this->abortIfClosed($cafeSession);
 
@@ -39,10 +40,10 @@ class OrderItemController extends Controller
         $cafeSession->recalculateTotals();
         OperationLog::record('إضافة طلب', $orderItem, ['الفاتورة' => $cafeSession->invoice_number]);
 
-        return back()->with('status', 'تمت إضافة الطلب.');
+        return $this->respond($request, 'تمت إضافة الطلب.');
     }
 
-    public function update(Request $request, OrderItem $orderItem): RedirectResponse
+    public function update(Request $request, OrderItem $orderItem): RedirectResponse|JsonResponse
     {
         $session = $orderItem->cafeSession;
         $this->abortIfClosed($session);
@@ -58,10 +59,10 @@ class OrderItemController extends Controller
         $session->recalculateTotals();
         OperationLog::record('تحديث طلب', $orderItem, $data);
 
-        return back()->with('status', 'تم تحديث الطلب.');
+        return $this->respond($request, 'تم تحديث الطلب.');
     }
 
-    public function destroy(OrderItem $orderItem): RedirectResponse
+    public function destroy(Request $request, OrderItem $orderItem): RedirectResponse|JsonResponse
     {
         $session = $orderItem->cafeSession;
         $this->abortIfClosed($session);
@@ -71,7 +72,16 @@ class OrderItemController extends Controller
         $session->load('orderItems');
         $session->recalculateTotals();
 
-        return back()->with('status', 'تم حذف الطلب.');
+        return $this->respond($request, 'تم حذف الطلب.');
+    }
+
+    private function respond(Request $request, string $message): RedirectResponse|JsonResponse
+    {
+        if ($request->expectsJson()) {
+            return response()->json(['message' => $message]);
+        }
+
+        return back()->with('status', $message);
     }
 
     private function abortIfClosed(CafeSession $session): void

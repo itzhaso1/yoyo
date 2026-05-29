@@ -9,7 +9,7 @@
 </div>
 
 <section class="invoice">
-    <h2 style="text-align:center;margin:0;">نظام كاشير المقهى</h2>
+    <h2 style="text-align:center;margin:0;">بيت جدي</h2>
     <p style="text-align:center;margin:6px 0 18px;">فاتورة ضريبية مبسطة</p>
     <div style="display:grid;gap:5px;font-size:14px;">
         <span>رقم الفاتورة: <strong>{{ $session->invoice_number }}</strong></span>

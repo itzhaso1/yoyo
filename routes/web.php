@@ -3,11 +3,13 @@
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CafeSessionController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\DeliveryOrderController;
 use App\Http\Controllers\MenuItemController;
 use App\Http\Controllers\OrderItemController;
 use App\Http\Controllers\PosTableController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ReportController;
+use App\Http\Controllers\SettingsController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('guest')->group(function (): void {
@@ -33,6 +35,12 @@ Route::middleware('auth')->group(function (): void {
     Route::post('/sessions/{cafeSession}/orders', [OrderItemController::class, 'store'])->name('orders.store');
     Route::patch('/orders/{orderItem}', [OrderItemController::class, 'update'])->name('orders.update');
     Route::delete('/orders/{orderItem}', [OrderItemController::class, 'destroy'])->name('orders.destroy');
+
+    Route::get('/delivery-orders', [DeliveryOrderController::class, 'index'])->name('delivery-orders.index');
+    Route::post('/delivery-orders', [DeliveryOrderController::class, 'store'])->name('delivery-orders.store');
+    Route::patch('/delivery-orders/{deliveryOrder}', [DeliveryOrderController::class, 'update'])->name('delivery-orders.update');
+    Route::delete('/delivery-orders/{deliveryOrder}', [DeliveryOrderController::class, 'destroy'])->name('delivery-orders.destroy');
+    Route::get('/settings', [SettingsController::class, 'index'])->name('settings.index');
 
     Route::middleware('admin')->group(function (): void {
         Route::post('/tables', [PosTableController::class, 'store'])->name('tables.store');

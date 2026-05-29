@@ -47,7 +47,7 @@
                 <h3 style="margin-top:0;">{{ $group['label'] }}</h3>
                 <div class="grid grid-3">
                     @foreach($group['items'] as $item)
-                        <form method="POST" action="{{ route('orders.store', $session) }}">
+                        <form method="POST" action="{{ route('orders.store', $session) }}" data-order-form>
                             @csrf
                             <input type="hidden" name="menu_item_id" value="{{ $item->id }}">
                             <input type="hidden" name="quantity" value="1">
@@ -62,7 +62,7 @@
         @endforeach
         <hr style="border-color:var(--line);margin:20px 0;">
         <h3>طلب مخصص</h3>
-        <form method="POST" action="{{ route('orders.store', $session) }}" class="grid grid-4">
+        <form method="POST" action="{{ route('orders.store', $session) }}" class="grid grid-4" data-order-form>
             @csrf
             <input class="field" name="item_name" placeholder="اسم الصنف" @disabled(! $session->isOpen())>
             <input class="field" type="number" step="0.01" min="0" name="price" placeholder="السعر" @disabled(! $session->isOpen())>
@@ -73,10 +73,11 @@
 
     <section class="panel">
         <h2>الطلبات</h2>
+        <div id="order-feedback" class="alert alert-ok" style="display:none;"></div>
         <div id="orders-list" data-count="{{ $session->orderItems->count() }}">
             @forelse($session->orderItems as $order)
                 <div class="order-card">
-                    <form id="update-order-{{ $order->id }}" method="POST" action="{{ route('orders.update', $order) }}" style="display:contents;">
+                    <form id="update-order-{{ $order->id }}" method="POST" action="{{ route('orders.update', $order) }}" style="display:contents;" data-order-form>
                         @csrf
                         @method('PATCH')
                         <input class="field" name="item_name" value="{{ $order->item_name }}" @disabled(! $session->isOpen())>
@@ -85,7 +86,7 @@
                         <strong>{{ number_format($order->line_total, 2) }}</strong>
                         <button class="btn btn-small" type="submit" @disabled(! $session->isOpen())>تحديث</button>
                     </form>
-                    <form method="POST" action="{{ route('orders.destroy', $order) }}" style="grid-column:1 / -1;">
+                    <form method="POST" action="{{ route('orders.destroy', $order) }}" style="grid-column:1 / -1;" data-order-form>
                         @csrf
                         @method('DELETE')
                         <button class="btn btn-danger btn-small" type="submit" @disabled(! $session->isOpen())>حذف</button>
@@ -129,7 +130,7 @@ function orderCard(order) {
     const safeName = escapeHtml(order.item_name);
     return `
         <div class="order-card">
-            <form method="POST" action="${ordersBase}/${order.id}" style="display:contents;">
+            <form method="POST" action="${ordersBase}/${order.id}" style="display:contents;" data-order-form>
                 <input type="hidden" name="_token" value="${csrf}">
                 <input type="hidden" name="_method" value="PATCH">
                 <input class="field" name="item_name" value="${safeName}" ${disabled}>
@@ -138,15 +139,57 @@ function orderCard(order) {
                 <strong>${order.line_total}</strong>
                 <button class="btn btn-small" type="submit" ${disabled}>تحديث</button>
             </form>
-            <form method="POST" action="${ordersBase}/${order.id}" style="grid-column:1 / -1;">
+            <form method="POST" action="${ordersBase}/${order.id}" style="grid-column:1 / -1;" data-order-form>
                 <input type="hidden" name="_token" value="${csrf}">
                 <input type="hidden" name="_method" value="DELETE">
                 <button class="btn btn-danger btn-small" type="submit" ${disabled}>حذف</button>
             </form>
         </div>`;
 }
-async function refreshSession() {
-    if (document.activeElement && ['INPUT', 'SELECT', 'TEXTAREA'].includes(document.activeElement.tagName)) return;
+
+function showOrderFeedback(message, isError = false) {
+    const feedback = document.getElementById('order-feedback');
+    if (!feedback) return;
+    feedback.textContent = message;
+    feedback.classList.toggle('alert-ok', !isError);
+    feedback.classList.toggle('alert-error', isError);
+    feedback.style.display = 'block';
+    clearTimeout(showOrderFeedback.timeout);
+    showOrderFeedback.timeout = setTimeout(() => feedback.style.display = 'none', 2500);
+}
+async function submitOrderForm(form) {
+    const button = form.querySelector('button[type="submit"]');
+    if (button) button.disabled = true;
+
+    try {
+        const response = await fetch(form.action, {
+            method: (form.method || 'POST').toUpperCase(),
+            body: new FormData(form),
+            headers: {'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest'},
+        });
+        const payload = await response.json().catch(() => ({}));
+        if (!response.ok) {
+            throw new Error(payload.message || 'تعذر تنفيذ العملية.');
+        }
+        form.reset();
+        const quantity = form.querySelector('input[name="quantity"]');
+        if (quantity && !quantity.value) quantity.value = 1;
+        showOrderFeedback(payload.message || 'تم تحديث الطلب.');
+        await refreshSession(true);
+    } catch (error) {
+        showOrderFeedback(error.message || 'تعذر تنفيذ العملية.', true);
+    } finally {
+        if (button && !sessionClosed) button.disabled = false;
+    }
+}
+document.addEventListener('submit', (event) => {
+    const form = event.target.closest('[data-order-form]');
+    if (!form) return;
+    event.preventDefault();
+    submitOrderForm(form);
+});
+async function refreshSession(force = false) {
+    if (!force && document.activeElement && ['INPUT', 'SELECT', 'TEXTAREA'].includes(document.activeElement.tagName)) return;
     try {
         const response = await fetch('{{ route('sessions.state', $session) }}', {headers: {'Accept': 'application/json'}});
         const payload = await response.json();

@@ -393,5 +393,4 @@ class ExampleTest extends TestCase
             ->assertOk()
             ->assertJsonPath('tables.0.active_session_opened_at', $session->opened_at->toIso8601String());
     }
-
 }

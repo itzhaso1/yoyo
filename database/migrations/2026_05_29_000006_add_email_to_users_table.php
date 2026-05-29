@@ -8,16 +8,20 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::table('users', function (Blueprint $table): void {
-            $table->string('email')->nullable()->unique()->after('username');
-        });
+        if (! Schema::hasColumn('users', 'email')) {
+            Schema::table('users', function (Blueprint $table): void {
+                $table->string('email')->nullable()->unique()->after('username');
+            });
+        }
     }
 
     public function down(): void
     {
-        Schema::table('users', function (Blueprint $table): void {
-            $table->dropUnique(['email']);
-            $table->dropColumn('email');
-        });
+        if (Schema::hasColumn('users', 'email')) {
+            Schema::table('users', function (Blueprint $table): void {
+                $table->dropUnique(['email']);
+                $table->dropColumn('email');
+            });
+        }
     }
 };

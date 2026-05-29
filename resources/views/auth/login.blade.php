@@ -1,16 +1,16 @@
 @extends('layouts.app')
 
-@section('title', 'Login - Cafe POS')
+@section('title', 'تسجيل الدخول - نظام كاشير المقهى')
 
 @section('content')
 <div class="panel" style="max-width:460px;margin:70px auto;">
     <h1>تسجيل الدخول</h1>
-    <p class="muted">ادخل باسم المستخدم وكلمة المرور للوصول إلى نظام الكاشير.</p>
+    <p class="muted">يمكنك الدخول بالبريد الإلكتروني أو اسم المستخدم.</p>
     <form method="POST" action="{{ route('login.store') }}">
         @csrf
         <div class="form-row">
-            <label>اسم المستخدم</label>
-            <input class="field" name="username" value="{{ old('username') }}" required autofocus autocomplete="username">
+            <label>البريد الإلكتروني أو اسم المستخدم</label>
+            <input class="field" name="login" value="{{ old('login') }}" required autofocus autocomplete="username" placeholder="مثال: admin@example.com أو admin">
         </div>
         <div class="form-row">
             <label>كلمة المرور</label>
@@ -21,6 +21,6 @@
         </label>
         <button class="btn btn-primary" type="submit" style="width:100%;">دخول</button>
     </form>
-    <p class="muted" style="margin-top:18px;">بيانات أولية بعد تشغيل seed: admin/admin123 أو cashier/cashier123</p>
+    <p class="muted" style="margin-top:18px;">حساب الأدمن: admin@example.com أو admin / كلمة المرور: admin123</p>
 </div>
 @endsection

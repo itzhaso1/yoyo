@@ -1,33 +1,33 @@
 @extends('layouts.app')
 
-@section('title', 'الطاولات - Cafe POS')
+@section('title', 'الطاولات - نظام كاشير المقهى')
 
 @section('content')
 <div class="grid grid-2">
     <section class="panel">
         <h1>لوحة الطاولات</h1>
-        <p class="muted">اضغط على أي طاولة لفتح جلسة أو متابعة الجلسة المفتوحة.</p>
+        <p class="muted">اضغط على أي طاولة لفتح جلسة جديدة أو متابعة الجلسة المفتوحة.</p>
         <div class="legend">
-            <span><i class="dot" style="background:#22c55e"></i> Free</span>
-            <span><i class="dot" style="background:#ef4444"></i> Busy</span>
-            <span><i class="dot" style="background:#f59e0b"></i> Reserved</span>
-            <span><i class="dot" style="background:#3b82f6"></i> Billing</span>
+            <span><i class="dot" style="background:#22c55e"></i> متاحة</span>
+            <span><i class="dot" style="background:#ef4444"></i> مشغولة</span>
+            <span><i class="dot" style="background:#f59e0b"></i> محجوزة</span>
+            <span><i class="dot" style="background:#3b82f6"></i> قيد الحساب</span>
         </div>
     </section>
 
     @if(auth()->user()->isAdmin())
         <section class="panel">
-            <h2>إضافة طاولة</h2>
+            <h2>إضافة طاولة من لوحة الأدمن</h2>
             <form method="POST" action="{{ route('tables.store') }}" class="grid grid-4">
                 @csrf
                 <input class="field" name="name" placeholder="اسم الطاولة" required>
-                <select name="section">
+                <select name="section" aria-label="القسم">
                     @foreach($sections as $key => $label)
                         <option value="{{ $key }}">{{ $label }}</option>
                     @endforeach
                 </select>
                 <input class="field" type="number" name="seats" placeholder="عدد الكراسي" min="1">
-                <button class="btn btn-primary" type="submit">إضافة</button>
+                <button class="btn btn-primary" type="submit">إضافة طاولة</button>
             </form>
         </section>
     @endif
@@ -43,8 +43,8 @@
                         @csrf
                         <button class="table-card status-{{ $table->status }}" data-table-card="{{ $table->id }}" type="submit">
                             <strong style="font-size:26px;display:block;">{{ $table->name }}</strong>
-                            <span class="badge" data-table-status="{{ $table->id }}">{{ strtoupper($table->status) }}</span>
-                            <div style="margin-top:14px;" class="muted">{{ $table->seats ? $table->seats.' seats' : 'No seats set' }}</div>
+                            <span class="badge" data-table-status="{{ $table->id }}">{{ $statuses[$table->status] ?? $table->status }}</span>
+                            <div style="margin-top:14px;" class="muted">{{ $table->seats ? $table->seats.' كرسي' : 'لم يحدد عدد الكراسي' }}</div>
                             @if($table->activeSession)
                                 <div style="margin-top:8px;">{{ $table->activeSession->invoice_number }}</div>
                             @endif
@@ -54,12 +54,12 @@
                         <form method="POST" action="{{ route('tables.update', $table) }}" style="display:flex;gap:6px;margin-top:8px;">
                             @csrf
                             @method('PATCH')
-                            <select name="status" style="padding:7px;border-radius:9px;">
+                            <select name="status" style="padding:7px;border-radius:9px;" aria-label="حالة الطاولة">
                                 @foreach($statuses as $status => $label)
                                     <option value="{{ $status }}" @selected($table->status === $status)>{{ $label }}</option>
                                 @endforeach
                             </select>
-                            <button class="btn btn-small" type="submit">حفظ</button>
+                            <button class="btn btn-small" type="submit">حفظ الحالة</button>
                         </form>
                     @endif
                 </div>
@@ -74,6 +74,7 @@
 @push('scripts')
 <script>
 const statusClasses = ['status-free', 'status-busy', 'status-reserved', 'status-billing'];
+const statusLabels = @json($statuses);
 async function refreshTables() {
     try {
         const response = await fetch('{{ route('tables.state') }}', {headers: {'Accept': 'application/json'}});
@@ -84,10 +85,10 @@ async function refreshTables() {
             if (!card || !label) return;
             card.classList.remove(...statusClasses);
             card.classList.add(`status-${table.status}`);
-            label.textContent = table.status.toUpperCase();
+            label.textContent = statusLabels[table.status] || table.status;
         });
     } catch (error) {
-        console.warn('table refresh failed', error);
+        console.warn('تعذر تحديث الطاولات', error);
     }
 }
 setInterval(refreshTables, 5000);

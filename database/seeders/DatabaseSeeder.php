@@ -13,22 +13,22 @@ class DatabaseSeeder extends Seeder
     {
         User::updateOrCreate(
             ['username' => 'admin'],
-            ['name' => 'Admin', 'role' => 'admin', 'password' => 'admin123']
+            ['name' => 'مدير النظام', 'email' => 'admin@example.com', 'role' => 'admin', 'password' => 'admin123']
         );
 
         User::updateOrCreate(
             ['username' => 'cashier'],
-            ['name' => 'Cashier', 'role' => 'cashier', 'password' => 'cashier123']
+            ['name' => 'الكاشير', 'email' => 'cashier@example.com', 'role' => 'cashier', 'password' => 'cashier123']
         );
 
         $tables = [
-            ['name' => 'T1', 'section' => 'indoor', 'seats' => 4, 'sort_order' => 1],
-            ['name' => 'T2', 'section' => 'indoor', 'seats' => 4, 'sort_order' => 2],
-            ['name' => 'T3', 'section' => 'indoor', 'seats' => 6, 'sort_order' => 3],
-            ['name' => 'T4', 'section' => 'indoor', 'seats' => 2, 'sort_order' => 4],
-            ['name' => 'O1', 'section' => 'outdoor', 'seats' => 4, 'sort_order' => 10],
-            ['name' => 'O2', 'section' => 'outdoor', 'seats' => 4, 'sort_order' => 11],
-            ['name' => 'O3', 'section' => 'outdoor', 'seats' => 6, 'sort_order' => 12],
+            ['name' => 'طاولة 1', 'section' => 'indoor', 'seats' => 4, 'sort_order' => 1],
+            ['name' => 'طاولة 2', 'section' => 'indoor', 'seats' => 4, 'sort_order' => 2],
+            ['name' => 'طاولة 3', 'section' => 'indoor', 'seats' => 6, 'sort_order' => 3],
+            ['name' => 'طاولة 4', 'section' => 'indoor', 'seats' => 2, 'sort_order' => 4],
+            ['name' => 'خارجي 1', 'section' => 'outdoor', 'seats' => 4, 'sort_order' => 10],
+            ['name' => 'خارجي 2', 'section' => 'outdoor', 'seats' => 4, 'sort_order' => 11],
+            ['name' => 'خارجي 3', 'section' => 'outdoor', 'seats' => 6, 'sort_order' => 12],
             ['name' => 'VIP 1', 'section' => 'vip', 'seats' => 8, 'sort_order' => 20],
             ['name' => 'VIP 2', 'section' => 'vip', 'seats' => 8, 'sort_order' => 21],
         ];
@@ -38,13 +38,13 @@ class DatabaseSeeder extends Seeder
         }
 
         $items = [
-            ['name' => 'Double Apple Shisha', 'category' => 'shisha', 'price' => 12.00],
-            ['name' => 'Mint Shisha', 'category' => 'shisha', 'price' => 10.00],
-            ['name' => 'Turkish Coffee', 'category' => 'drink', 'price' => 4.00],
-            ['name' => 'Latte', 'category' => 'drink', 'price' => 5.50],
-            ['name' => 'Fresh Orange Juice', 'category' => 'drink', 'price' => 6.00],
-            ['name' => 'Club Sandwich', 'category' => 'food', 'price' => 8.50],
-            ['name' => 'Cheesecake', 'category' => 'food', 'price' => 5.00],
+            ['name' => 'شيشة تفاحتين', 'category' => 'shisha', 'price' => 12.00],
+            ['name' => 'شيشة نعناع', 'category' => 'shisha', 'price' => 10.00],
+            ['name' => 'قهوة تركية', 'category' => 'drink', 'price' => 4.00],
+            ['name' => 'لاتيه', 'category' => 'drink', 'price' => 5.50],
+            ['name' => 'عصير برتقال طازج', 'category' => 'drink', 'price' => 6.00],
+            ['name' => 'ساندويتش كلوب', 'category' => 'food', 'price' => 8.50],
+            ['name' => 'تشيز كيك', 'category' => 'food', 'price' => 5.00],
         ];
 
         foreach ($items as $item) {

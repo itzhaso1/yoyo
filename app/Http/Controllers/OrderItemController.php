@@ -37,7 +37,7 @@ class OrderItemController extends Controller
 
         $cafeSession->load('orderItems');
         $cafeSession->recalculateTotals();
-        OperationLog::record('order.created', $orderItem, ['session' => $cafeSession->invoice_number]);
+        OperationLog::record('إضافة طلب', $orderItem, ['الفاتورة' => $cafeSession->invoice_number]);
 
         return back()->with('status', 'تمت إضافة الطلب.');
     }
@@ -56,7 +56,7 @@ class OrderItemController extends Controller
         $orderItem->update($data);
         $session->load('orderItems');
         $session->recalculateTotals();
-        OperationLog::record('order.updated', $orderItem, $data);
+        OperationLog::record('تحديث طلب', $orderItem, $data);
 
         return back()->with('status', 'تم تحديث الطلب.');
     }
@@ -66,7 +66,7 @@ class OrderItemController extends Controller
         $session = $orderItem->cafeSession;
         $this->abortIfClosed($session);
 
-        OperationLog::record('order.deleted', $orderItem, ['item_name' => $orderItem->item_name]);
+        OperationLog::record('حذف طلب', $orderItem, ['الصنف' => $orderItem->item_name]);
         $orderItem->delete();
         $session->load('orderItems');
         $session->recalculateTotals();

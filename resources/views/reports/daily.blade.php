@@ -15,8 +15,8 @@
 <div class="stats" style="margin-top:18px;">
     <div class="stat"><span>إجمالي المبيعات</span><strong>{{ number_format($summary['sales'], 2) }}</strong></div>
     <div class="stat"><span>عدد الفواتير</span><strong>{{ $summary['invoices'] }}</strong></div>
-    <div class="stat"><span>الخصومات</span><strong>{{ number_format($summary['discounts'], 2) }}</strong></div>
-    <div class="stat"><span>Tips</span><strong>{{ number_format($summary['tips'], 2) }}</strong></div>
+    <div class="stat"><span>إجمالي الخصومات</span><strong>{{ number_format($summary['discounts'], 2) }}</strong></div>
+    <div class="stat"><span>إجمالي الإكراميات</span><strong>{{ number_format($summary['tips'], 2) }}</strong></div>
 </div>
 
 <div class="grid grid-2" style="margin-top:18px;align-items:start;">
@@ -50,7 +50,7 @@
 <section class="panel" style="margin-top:18px;">
     <h2>الفواتير المغلقة</h2>
     <table class="data-table">
-        <thead><tr><th>الفاتورة</th><th>الطاولة</th><th>الموظف</th><th>الإغلاق</th><th>الإجمالي</th></tr></thead>
+        <thead><tr><th>الفاتورة</th><th>الطاولة</th><th>الموظف</th><th>وقت الإغلاق</th><th>الإجمالي</th></tr></thead>
         <tbody>
             @foreach($sessions as $session)
                 <tr>

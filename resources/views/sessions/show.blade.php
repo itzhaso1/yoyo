@@ -6,11 +6,11 @@
 <div class="grid grid-2">
     <section class="panel">
         <h1>جلسة {{ $session->invoice_number }}</h1>
-        <p class="muted">الطاولة: {{ $session->table->name }} | الموظف: {{ $session->user?->name ?? 'غير محدد' }} | الحالة: <span id="table-status">{{ $session->table->status }}</span></p>
+        <p class="muted">الطاولة: {{ $session->table->name }} | الموظف: {{ $session->user?->name ?? 'غير محدد' }} | الحالة: <span id="table-status">{{ $statuses[$session->table->status] ?? $session->table->status }}</span></p>
         <div class="stats" style="grid-template-columns:repeat(3,minmax(0,1fr));">
-            <div class="stat"><span>Subtotal</span><strong id="subtotal">{{ number_format($session->subtotal, 2) }}</strong></div>
-            <div class="stat"><span>Discount</span><strong id="discount">{{ number_format($session->discount, 2) }}</strong></div>
-            <div class="stat"><span>Total</span><strong id="total-price">{{ number_format($session->total_price, 2) }}</strong></div>
+            <div class="stat"><span>المجموع قبل الخصم</span><strong id="subtotal">{{ number_format($session->subtotal, 2) }}</strong></div>
+            <div class="stat"><span>الخصم</span><strong id="discount">{{ number_format($session->discount, 2) }}</strong></div>
+            <div class="stat"><span>الإجمالي النهائي</span><strong id="total-price">{{ number_format($session->total_price, 2) }}</strong></div>
         </div>
     </section>
 
@@ -20,14 +20,14 @@
             <form method="POST" action="{{ route('sessions.billing', $session) }}">
                 @csrf
                 @method('PATCH')
-                <button class="btn" @disabled($session->isClosed())>تحويل إلى Billing</button>
+                <button class="btn" @disabled($session->isClosed())>تحويل إلى قيد الحساب</button>
             </form>
-            <a class="btn" href="{{ route('sessions.invoice', $session) }}">طباعة فاتورة</a>
+            <a class="btn" href="{{ route('sessions.invoice', $session) }}">طباعة الفاتورة</a>
         </div>
         <form method="POST" action="{{ route('sessions.close', $session) }}" class="grid grid-3">
             @csrf
-            <input class="field" type="number" step="0.01" min="0" name="discount" value="{{ old('discount', $session->discount) }}" placeholder="Discount">
-            <input class="field" type="number" step="0.01" min="0" name="tip" value="{{ old('tip', $session->tip) }}" placeholder="Tip">
+            <input class="field" type="number" step="0.01" min="0" name="discount" value="{{ old('discount', $session->discount) }}" placeholder="الخصم">
+            <input class="field" type="number" step="0.01" min="0" name="tip" value="{{ old('tip', $session->tip) }}" placeholder="إكرامية اختيارية">
             <button class="btn btn-primary" type="submit" @disabled($session->isClosed())>إغلاق الجلسة</button>
         </form>
     </section>
@@ -58,15 +58,15 @@
             @csrf
             <input class="field" name="item_name" placeholder="اسم الصنف" @disabled($session->isClosed())>
             <input class="field" type="number" step="0.01" min="0" name="price" placeholder="السعر" @disabled($session->isClosed())>
-            <input class="field" type="number" min="1" name="quantity" value="1" @disabled($session->isClosed())>
-            <button class="btn btn-primary" type="submit" @disabled($session->isClosed())>إضافة</button>
+            <input class="field" type="number" min="1" name="quantity" value="1" placeholder="الكمية" @disabled($session->isClosed())>
+            <button class="btn btn-primary" type="submit" @disabled($session->isClosed())>إضافة الطلب</button>
         </form>
     </section>
 
     <section class="panel">
         <h2>الطلبات</h2>
         <div id="orders-list" data-count="{{ $session->orderItems->count() }}">
-            @foreach($session->orderItems as $order)
+            @forelse($session->orderItems as $order)
                 <div class="order-card">
                     <form id="update-order-{{ $order->id }}" method="POST" action="{{ route('orders.update', $order) }}" style="display:contents;">
                         @csrf
@@ -83,7 +83,9 @@
                         <button class="btn btn-danger btn-small" type="submit" @disabled($session->isClosed())>حذف</button>
                     </form>
                 </div>
-            @endforeach
+            @empty
+                <p class="muted">لا توجد طلبات بعد.</p>
+            @endforelse
         </div>
     </section>
 </div>
@@ -92,6 +94,7 @@
 @push('scripts')
 <script>
 const sessionClosed = @json($session->isClosed());
+const statusLabels = @json($statuses);
 const csrf = document.querySelector('meta[name="csrf-token"]').content;
 const ordersBase = '{{ url('/orders') }}';
 function escapeHtml(value) {
@@ -126,10 +129,10 @@ async function refreshSession() {
         document.getElementById('subtotal').textContent = payload.session.subtotal;
         document.getElementById('discount').textContent = payload.session.discount;
         document.getElementById('total-price').textContent = payload.session.total_price;
-        document.getElementById('table-status').textContent = payload.session.table_status;
+        document.getElementById('table-status').textContent = statusLabels[payload.session.table_status] || payload.session.table_status;
         document.getElementById('orders-list').innerHTML = payload.session.orders.map(orderCard).join('') || '<p class="muted">لا توجد طلبات بعد.</p>';
     } catch (error) {
-        console.warn('session refresh failed', error);
+        console.warn('تعذر تحديث الجلسة', error);
     }
 }
 setInterval(refreshSession, 5000);

@@ -9,18 +9,18 @@
 </div>
 
 <section class="invoice">
-    <h2 style="text-align:center;margin:0;">Cafe POS</h2>
+    <h2 style="text-align:center;margin:0;">نظام كاشير المقهى</h2>
     <p style="text-align:center;margin:6px 0 18px;">فاتورة ضريبية مبسطة</p>
     <div style="display:grid;gap:5px;font-size:14px;">
         <span>رقم الفاتورة: <strong>{{ $session->invoice_number }}</strong></span>
         <span>الطاولة: {{ $session->table->name }}</span>
         <span>الموظف: {{ $session->user?->name ?? '-' }}</span>
-        <span>فتح: {{ $session->opened_at?->format('Y-m-d H:i') }}</span>
-        <span>إغلاق: {{ $session->closed_at?->format('Y-m-d H:i') ?? '-' }}</span>
+        <span>وقت الفتح: {{ $session->opened_at?->format('Y-m-d H:i') }}</span>
+        <span>وقت الإغلاق: {{ $session->closed_at?->format('Y-m-d H:i') ?? '-' }}</span>
     </div>
     <table style="margin-top:18px;">
         <thead>
-            <tr><th>الصنف</th><th>كمية</th><th>الإجمالي</th></tr>
+            <tr><th>الصنف</th><th>الكمية</th><th>الإجمالي</th></tr>
         </thead>
         <tbody>
             @foreach($session->orderItems as $order)
@@ -33,10 +33,10 @@
         </tbody>
     </table>
     <div style="margin-top:18px;display:grid;gap:7px;">
-        <span>Subtotal: {{ number_format($session->subtotal, 2) }}</span>
-        <span>Discount: {{ number_format($session->discount, 2) }}</span>
-        <span>Tip: {{ number_format($session->tip, 2) }}</span>
-        <strong style="font-size:22px;">Total: {{ number_format($session->total_price, 2) }}</strong>
+        <span>المجموع قبل الخصم: {{ number_format($session->subtotal, 2) }}</span>
+        <span>الخصم: {{ number_format($session->discount, 2) }}</span>
+        <span>الإكرامية: {{ number_format($session->tip, 2) }}</span>
+        <strong style="font-size:22px;">الإجمالي النهائي: {{ number_format($session->total_price, 2) }}</strong>
     </div>
     <p style="text-align:center;margin-top:22px;">شكراً لزيارتكم</p>
 </section>

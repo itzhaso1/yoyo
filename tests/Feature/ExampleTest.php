@@ -19,11 +19,51 @@ class ExampleTest extends TestCase
         $this->get('/')->assertRedirect('/login');
     }
 
+    public function test_admin_can_login_with_email_and_create_tables_and_menu_items(): void
+    {
+        $admin = User::factory()->admin()->create([
+            'username' => 'admin',
+            'email' => 'admin@example.com',
+            'password' => 'admin123',
+        ]);
+
+        $this->post(route('login.store'), [
+            'login' => 'admin@example.com',
+            'password' => 'admin123',
+        ])->assertRedirect(route('dashboard'));
+
+        $this->assertAuthenticatedAs($admin);
+
+        $this->post(route('tables.store'), [
+            'name' => 'طاولة اختبار',
+            'section' => 'vip',
+            'seats' => 6,
+        ])->assertSessionHasNoErrors()->assertRedirect();
+
+        $this->assertDatabaseHas(PosTable::class, [
+            'name' => 'طاولة اختبار',
+            'section' => 'vip',
+            'status' => 'free',
+        ]);
+
+        $this->post(route('menu-items.store'), [
+            'name' => 'قهوة اختبار',
+            'category' => 'drink',
+            'price' => 7.5,
+            'is_active' => 1,
+        ])->assertSessionHasNoErrors()->assertRedirect();
+
+        $this->assertDatabaseHas(MenuItem::class, [
+            'name' => 'قهوة اختبار',
+            'category' => 'drink',
+        ]);
+    }
+
     public function test_cashier_can_open_table_add_order_and_close_session(): void
     {
         $cashier = User::factory()->create(['role' => 'cashier']);
-        $table = PosTable::create(['name' => 'T1', 'section' => 'indoor', 'status' => 'free']);
-        $item = MenuItem::create(['name' => 'Latte', 'category' => 'drink', 'price' => 10, 'is_active' => true]);
+        $table = PosTable::create(['name' => 'طاولة 1', 'section' => 'indoor', 'status' => 'free']);
+        $item = MenuItem::create(['name' => 'لاتيه', 'category' => 'drink', 'price' => 10, 'is_active' => true]);
 
         $this->actingAs($cashier)
             ->post(route('tables.open', $table))
@@ -39,7 +79,7 @@ class ExampleTest extends TestCase
 
         $this->assertDatabaseHas(OrderItem::class, [
             'cafe_session_id' => $session->id,
-            'item_name' => 'Latte',
+            'item_name' => 'لاتيه',
             'quantity' => 2,
         ]);
 

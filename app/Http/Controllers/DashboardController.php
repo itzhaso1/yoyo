@@ -19,8 +19,8 @@ class DashboardController extends Controller
 
         return view('dashboard.index', [
             'tablesBySection' => $tablesBySection,
-            'sections' => ['indoor' => 'Indoor', 'outdoor' => 'Outdoor', 'vip' => 'VIP'],
-            'statuses' => ['free' => 'Free', 'busy' => 'Busy', 'reserved' => 'Reserved', 'billing' => 'Billing'],
+            'sections' => ['indoor' => 'داخلي', 'outdoor' => 'خارجي', 'vip' => 'كبار الشخصيات'],
+            'statuses' => ['free' => 'متاحة', 'busy' => 'مشغولة', 'reserved' => 'محجوزة', 'billing' => 'قيد الحساب'],
         ]);
     }
 

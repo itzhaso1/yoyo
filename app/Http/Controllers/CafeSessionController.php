@@ -33,7 +33,7 @@ class CafeSessionController extends Controller
             ]);
 
             $table->update(['status' => 'busy']);
-            OperationLog::record('session.opened', $session, ['table' => $table->name]);
+            OperationLog::record('فتح جلسة', $session, ['الطاولة' => $table->name]);
 
             return $session;
         });
@@ -50,7 +50,8 @@ class CafeSessionController extends Controller
         return view('sessions.show', [
             'session' => $cafeSession->fresh(['table', 'user', 'orderItems.menuItem']),
             'menuItems' => $menuItems,
-            'categories' => ['shisha' => 'Shisha', 'food' => 'Food', 'drink' => 'Drink'],
+            'categories' => ['shisha' => 'شيشة', 'food' => 'أكل', 'drink' => 'مشروبات'],
+            'statuses' => ['free' => 'متاحة', 'busy' => 'مشغولة', 'reserved' => 'محجوزة', 'billing' => 'قيد الحساب'],
         ]);
     }
 
@@ -59,7 +60,7 @@ class CafeSessionController extends Controller
         $this->abortIfClosed($cafeSession);
 
         $cafeSession->table->update(['status' => 'billing']);
-        OperationLog::record('session.billing', $cafeSession);
+        OperationLog::record('تحويل الطاولة إلى الحساب', $cafeSession);
 
         return back()->with('status', 'تم تحويل الطاولة إلى مرحلة الحساب.');
     }
@@ -85,13 +86,13 @@ class CafeSessionController extends Controller
             $session->save();
 
             $session->table->update(['status' => 'free']);
-            OperationLog::record('session.closed', $session, [
-                'invoice_number' => $session->invoice_number,
-                'total_price' => $session->total_price,
+            OperationLog::record('إغلاق جلسة', $session, [
+                'رقم الفاتورة' => $session->invoice_number,
+                'الإجمالي' => $session->total_price,
             ]);
         });
 
-        return redirect()->route('sessions.invoice', $cafeSession)->with('status', 'تم إغلاق الجلسة وإرجاع الطاولة إلى free.');
+        return redirect()->route('sessions.invoice', $cafeSession)->with('status', 'تم إغلاق الجلسة وإرجاع الطاولة إلى متاحة.');
     }
 
     public function invoice(CafeSession $cafeSession): View

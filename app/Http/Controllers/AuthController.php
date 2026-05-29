@@ -18,26 +18,29 @@ class AuthController extends Controller
 
     public function login(Request $request): RedirectResponse
     {
-        $credentials = $request->validate([
-            'username' => ['required', 'string'],
+        $data = $request->validate([
+            'login' => ['required', 'string'],
             'password' => ['required', 'string'],
         ]);
 
-        if (! Auth::attempt($credentials, $request->boolean('remember'))) {
+        $login = trim($data['login']);
+        $field = filter_var($login, FILTER_VALIDATE_EMAIL) ? 'email' : 'username';
+
+        if (! Auth::attempt([$field => $login, 'password' => $data['password']], $request->boolean('remember'))) {
             throw ValidationException::withMessages([
-                'username' => __('بيانات الدخول غير صحيحة.'),
+                'login' => __('بيانات الدخول غير صحيحة. تأكد من البريد/اسم المستخدم وكلمة المرور.'),
             ]);
         }
 
         $request->session()->regenerate();
-        OperationLog::record('login');
+        OperationLog::record('تسجيل دخول');
 
         return redirect()->intended(route('dashboard'));
     }
 
     public function logout(Request $request): RedirectResponse
     {
-        OperationLog::record('logout');
+        OperationLog::record('تسجيل خروج');
         Auth::logout();
 
         $request->session()->invalidate();

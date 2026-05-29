@@ -15,7 +15,7 @@ class MenuItemController extends Controller
     {
         return view('menu-items.index', [
             'items' => MenuItem::orderBy('category')->orderBy('name')->get(),
-            'categories' => ['shisha' => 'Shisha', 'food' => 'Food', 'drink' => 'Drink'],
+            'categories' => ['shisha' => 'شيشة', 'food' => 'أكل', 'drink' => 'مشروبات'],
         ]);
     }
 
@@ -29,9 +29,9 @@ class MenuItemController extends Controller
         ]);
 
         $item = MenuItem::create($data + ['is_active' => $request->boolean('is_active', true)]);
-        OperationLog::record('menu.created', $item, $data);
+        OperationLog::record('إضافة صنف', $item, $data);
 
-        return back()->with('status', 'تمت إضافة الصنف.');
+        return back()->with('status', 'تمت إضافة الصنف بنجاح.');
     }
 
     public function update(Request $request, MenuItem $menuItem): RedirectResponse
@@ -45,7 +45,7 @@ class MenuItemController extends Controller
 
         $data['is_active'] = $request->boolean('is_active');
         $menuItem->update($data);
-        OperationLog::record('menu.updated', $menuItem, $data);
+        OperationLog::record('تحديث صنف', $menuItem, $data);
 
         return back()->with('status', 'تم تحديث الصنف.');
     }
@@ -53,7 +53,7 @@ class MenuItemController extends Controller
     public function destroy(MenuItem $menuItem): RedirectResponse
     {
         $menuItem->update(['is_active' => false]);
-        OperationLog::record('menu.disabled', $menuItem);
+        OperationLog::record('تعطيل صنف', $menuItem);
 
         return back()->with('status', 'تم تعطيل الصنف مع الحفاظ على سجل الفواتير القديمة.');
     }

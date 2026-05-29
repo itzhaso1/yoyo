@@ -21,9 +21,9 @@ class PosTableController extends Controller
         ]);
 
         $table = PosTable::create($data + ['status' => 'free', 'sort_order' => 0]);
-        OperationLog::record('table.created', $table, $data);
+        OperationLog::record('إضافة طاولة', $table, $data);
 
-        return back()->with('status', 'تمت إضافة الطاولة.');
+        return back()->with('status', 'تمت إضافة الطاولة بنجاح.');
     }
 
     public function update(Request $request, PosTable $posTable): RedirectResponse
@@ -37,11 +37,11 @@ class PosTableController extends Controller
         ]);
 
         if (($data['status'] ?? null) === 'free' && $posTable->activeSession()->exists()) {
-            return back()->withErrors(['status' => 'لا يمكن جعل الطاولة free قبل إغلاق الجلسة الحالية.']);
+            return back()->withErrors(['status' => 'لا يمكن جعل الطاولة متاحة قبل إغلاق الجلسة الحالية.']);
         }
 
         $posTable->update($data);
-        OperationLog::record('table.updated', $posTable, $data);
+        OperationLog::record('تحديث طاولة', $posTable, $data);
 
         return back()->with('status', 'تم تحديث الطاولة.');
     }

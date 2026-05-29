@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>@yield('title', 'Cafe POS')</title>
+    <title>@yield('title', 'نظام كاشير المقهى')</title>
     <style>
         :root { --bg:#0f172a; --panel:#111827; --muted:#94a3b8; --text:#f8fafc; --card:#1f2937; --line:#334155; --primary:#38bdf8; --danger:#ef4444; --ok:#22c55e; --warn:#f59e0b; --billing:#3b82f6; }
         * { box-sizing: border-box; }
@@ -59,18 +59,19 @@
 </head>
 <body>
     <header class="topbar no-print">
-        <a href="{{ route('dashboard') }}" class="brand">Cafe POS</a>
+        <a href="{{ route('dashboard') }}" class="brand">نظام كاشير المقهى</a>
         @auth
             <nav class="nav">
-                <span class="muted">{{ auth()->user()->name }} ({{ auth()->user()->role }})</span>
+                @php($roleLabel = ['admin' => 'مدير', 'cashier' => 'كاشير'][auth()->user()->role] ?? auth()->user()->role)
+                <span class="muted">{{ auth()->user()->name }} ({{ $roleLabel }})</span>
                 <a href="{{ route('dashboard') }}">الطاولات</a>
                 @if(auth()->user()->isAdmin())
-                    <a href="{{ route('menu-items.index') }}">المنيو</a>
-                    <a href="{{ route('reports.daily') }}">التقارير</a>
+                    <a href="{{ route('menu-items.index') }}">إدارة الأصناف</a>
+                    <a href="{{ route('reports.daily') }}">التقارير اليومية</a>
                 @endif
                 <form method="POST" action="{{ route('logout') }}">
                     @csrf
-                    <button type="submit">تسجيل خروج</button>
+                    <button type="submit">تسجيل الخروج</button>
                 </form>
             </nav>
         @endauth

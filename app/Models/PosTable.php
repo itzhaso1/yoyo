@@ -7,12 +7,17 @@ use Illuminate\Database\Eloquent\Model;
 class PosTable extends Model
 {
     public const STATUS_FREE = 'free';
+
     public const STATUS_BUSY = 'busy';
+
     public const STATUS_RESERVED = 'reserved';
+
     public const STATUS_BILLING = 'billing';
 
     public const SECTION_INDOOR = 'indoor';
+
     public const SECTION_OUTDOOR = 'outdoor';
+
     public const SECTION_VIP = 'vip';
 
     protected $fillable = [

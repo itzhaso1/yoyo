@@ -7,7 +7,9 @@ use Illuminate\Database\Eloquent\Model;
 class MenuItem extends Model
 {
     public const CATEGORY_SHISHA = 'shisha';
+
     public const CATEGORY_FOOD = 'food';
+
     public const CATEGORY_DRINK = 'drink';
 
     protected $fillable = [

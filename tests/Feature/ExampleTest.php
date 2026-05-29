@@ -203,4 +203,37 @@ class ExampleTest extends TestCase
             'category' => 'drink',
         ]);
     }
+
+    public function test_order_screen_groups_menu_items_by_type(): void
+    {
+        $cashier = User::factory()->create(['role' => 'cashier']);
+        $table = PosTable::create(['name' => 'طاولة مجموعات', 'section' => 'indoor', 'status' => 'busy']);
+        $session = CafeSession::create([
+            'user_id' => $cashier->id,
+            'pos_table_id' => $table->id,
+            'invoice_number' => 'INV-TEST-GROUPS',
+            'status' => 'open',
+            'opened_at' => now(),
+        ]);
+
+        MenuItem::create(['name' => 'كوكتيل - منجا', 'category' => 'drink', 'price' => 2, 'is_active' => true]);
+        MenuItem::create(['name' => 'سموذي - بطيخ', 'category' => 'drink', 'price' => 2.25, 'is_active' => true]);
+        MenuItem::create(['name' => 'قهوة باردة - ايس لاتيه', 'category' => 'drink', 'price' => 1.75, 'is_active' => true]);
+        MenuItem::create(['name' => 'موهيتو طاقة - فراولة', 'category' => 'drink', 'price' => 1.25, 'is_active' => true]);
+        MenuItem::create(['name' => 'ملك شيك - أوريو', 'category' => 'drink', 'price' => 2, 'is_active' => true]);
+        MenuItem::create(['name' => 'شيك - موز', 'category' => 'drink', 'price' => 1, 'is_active' => true]);
+        MenuItem::create(['name' => 'شيشة نعناع', 'category' => 'shisha', 'price' => 10, 'is_active' => true]);
+
+        $this->actingAs($cashier)
+            ->get(route('sessions.show', $session))
+            ->assertOk()
+            ->assertSee('الأصناف مقسمة حسب النوع')
+            ->assertSeeInOrder(['كوكتيل', 'كوكتيل - منجا'])
+            ->assertSeeInOrder(['سموذي', 'سموذي - بطيخ'])
+            ->assertSeeInOrder(['قهوة باردة وقهوة', 'قهوة باردة - ايس لاتيه'])
+            ->assertSeeInOrder(['موهيتو طاقة', 'موهيتو طاقة - فراولة'])
+            ->assertSeeInOrder(['ملك شيك', 'ملك شيك - أوريو'])
+            ->assertSeeInOrder(['شيك', 'شيك - موز'])
+            ->assertSeeInOrder(['شيشة', 'شيشة نعناع']);
+    }
 }

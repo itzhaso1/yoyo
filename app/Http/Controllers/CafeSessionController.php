@@ -45,12 +45,11 @@ class CafeSessionController extends Controller
     {
         $cafeSession->load(['table', 'user', 'orderItems.menuItem']);
         $cafeSession->recalculateTotals();
-        $menuItems = MenuItem::where('is_active', true)->orderBy('category')->orderBy('name')->get()->groupBy('category');
+        $menuItems = MenuItem::where('is_active', true)->orderBy('category')->orderBy('name')->get();
 
         return view('sessions.show', [
             'session' => $cafeSession->fresh(['table', 'user', 'orderItems.menuItem']),
-            'menuItems' => $menuItems,
-            'categories' => ['shisha' => 'شيشة', 'food' => 'أكل', 'drink' => 'مشروبات'],
+            'menuGroups' => $this->buildMenuGroups($menuItems),
             'statuses' => ['free' => 'متاحة', 'busy' => 'مشغولة', 'reserved' => 'محجوزة', 'billing' => 'قيد الحساب'],
         ]);
     }
@@ -126,6 +125,71 @@ class CafeSessionController extends Controller
                 ])->values(),
             ],
         ]);
+    }
+
+    private function buildMenuGroups($menuItems): array
+    {
+        $labels = [
+            'cocktail' => 'كوكتيل',
+            'smoothie' => 'سموذي',
+            'coffee' => 'قهوة باردة وقهوة',
+            'mojito' => 'موهيتو طاقة',
+            'king_shake' => 'ملك شيك',
+            'shake' => 'شيك',
+            'shisha' => 'شيشة',
+            'food' => 'أكل',
+            'other_drinks' => 'مشروبات أخرى',
+        ];
+
+        $grouped = [];
+        foreach ($labels as $key => $label) {
+            $grouped[$key] = ['label' => $label, 'items' => collect()];
+        }
+
+        foreach ($menuItems as $item) {
+            $grouped[$this->menuGroupKey($item)]['items']->push($item);
+        }
+
+        return array_filter($grouped, fn (array $group): bool => $group['items']->isNotEmpty());
+    }
+
+    private function menuGroupKey(MenuItem $item): string
+    {
+        $name = $item->name;
+
+        if ($item->category === 'shisha') {
+            return 'shisha';
+        }
+
+        if ($item->category === 'food') {
+            return 'food';
+        }
+
+        if (str_starts_with($name, 'كوكتيل -')) {
+            return 'cocktail';
+        }
+
+        if (str_starts_with($name, 'سموذي -')) {
+            return 'smoothie';
+        }
+
+        if (str_starts_with($name, 'قهوة باردة -') || str_contains($name, 'قهوة') || str_contains($name, 'لاتيه') || str_contains($name, 'موكا') || str_contains($name, 'كابتشينو')) {
+            return 'coffee';
+        }
+
+        if (str_starts_with($name, 'موهيتو طاقة -')) {
+            return 'mojito';
+        }
+
+        if (str_starts_with($name, 'ملك شيك -')) {
+            return 'king_shake';
+        }
+
+        if (str_starts_with($name, 'شيك -')) {
+            return 'shake';
+        }
+
+        return 'other_drinks';
     }
 
     private function nextInvoiceNumber(): string

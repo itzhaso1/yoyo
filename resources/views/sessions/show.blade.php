@@ -36,21 +36,24 @@
 <div class="grid grid-2" style="margin-top:18px;align-items:start;">
     <section class="panel">
         <h2>المنيو</h2>
-        @foreach($categories as $category => $label)
-            <h3>{{ $label }}</h3>
-            <div class="grid grid-3">
-                @foreach(($menuItems[$category] ?? collect()) as $item)
-                    <form method="POST" action="{{ route('orders.store', $session) }}">
-                        @csrf
-                        <input type="hidden" name="menu_item_id" value="{{ $item->id }}">
-                        <input type="hidden" name="quantity" value="1">
-                        <button class="menu-button" type="submit" @disabled($session->isClosed())>
-                            <strong>{{ $item->name }}</strong>
-                            <span class="muted" style="display:block;margin-top:6px;">{{ number_format($item->price, 2) }}</span>
-                        </button>
-                    </form>
-                @endforeach
-            </div>
+        <p class="muted">الأصناف مقسمة حسب النوع حتى تختار بسرعة بدون بحث طويل.</p>
+        @foreach($menuGroups as $group)
+            <section style="margin-top:16px;padding:14px;border:1px solid var(--line);border-radius:16px;background:#0f172a;">
+                <h3 style="margin-top:0;">{{ $group['label'] }}</h3>
+                <div class="grid grid-3">
+                    @foreach($group['items'] as $item)
+                        <form method="POST" action="{{ route('orders.store', $session) }}">
+                            @csrf
+                            <input type="hidden" name="menu_item_id" value="{{ $item->id }}">
+                            <input type="hidden" name="quantity" value="1">
+                            <button class="menu-button" type="submit" @disabled($session->isClosed())>
+                                <strong>{{ $item->name }}</strong>
+                                <span class="muted" style="display:block;margin-top:6px;">{{ number_format($item->price, 2) }}</span>
+                            </button>
+                        </form>
+                    @endforeach
+                </div>
+            </section>
         @endforeach
         <hr style="border-color:var(--line);margin:20px 0;">
         <h3>طلب مخصص</h3>

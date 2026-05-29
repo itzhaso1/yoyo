@@ -364,5 +364,4 @@ class ExampleTest extends TestCase
             ->assertDontSee($session->invoice_number)
             ->assertSee('<span>عدد الفواتير</span><strong>0</strong>', false);
     }
-
 }

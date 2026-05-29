@@ -36,6 +36,7 @@ class DashboardController extends Controller
                 'section' => $table->section,
                 'status' => $table->status,
                 'active_session_id' => $table->activeSession?->id,
+                'active_session_opened_at' => $table->activeSession?->opened_at?->toIso8601String(),
                 'active_session_url' => $table->activeSession ? route('sessions.show', $table->activeSession) : null,
                 'open_url' => route('tables.open', $table),
             ]);

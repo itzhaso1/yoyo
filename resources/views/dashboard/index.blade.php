@@ -71,6 +71,7 @@
                             @if($table->activeSession)
                                 <div style="margin-top:8px;">{{ $table->activeSession->invoice_number }}</div>
                             @endif
+                            <div style="margin-top:6px;" data-table-timer="{{ $table->id }}" data-opened-at="{{ $table->activeSession?->opened_at?->toIso8601String() }}">{{ $table->activeSession ? '00:00:00' : '' }}</div>
                         </button>
                     </form>
                     @if(auth()->user()->isAdmin())
@@ -116,6 +117,23 @@
 <script>
 const statusClasses = ['status-free', 'status-busy', 'status-reserved', 'status-billing'];
 const statusLabels = @json($statuses);
+function formatDuration(totalSeconds) {
+    const seconds = Math.max(0, Math.floor(totalSeconds));
+    const hours = String(Math.floor(seconds / 3600)).padStart(2, '0');
+    const minutes = String(Math.floor((seconds % 3600) / 60)).padStart(2, '0');
+    const remainingSeconds = String(seconds % 60).padStart(2, '0');
+    return `${hours}:${minutes}:${remainingSeconds}`;
+}
+function refreshTableTimers() {
+    document.querySelectorAll('[data-table-timer]').forEach((timer) => {
+        const openedAt = timer.dataset.openedAt;
+        if (!openedAt) {
+            timer.textContent = '';
+            return;
+        }
+        timer.textContent = formatDuration((Date.now() - new Date(openedAt).getTime()) / 1000);
+    });
+}
 async function refreshTables() {
     try {
         const response = await fetch('{{ route('tables.state') }}', {headers: {'Accept': 'application/json'}});
@@ -124,6 +142,11 @@ async function refreshTables() {
             const card = document.querySelector(`[data-table-card="${table.id}"]`);
             const label = document.querySelector(`[data-table-status="${table.id}"]`);
             if (!card || !label) return;
+            const timer = document.querySelector(`[data-table-timer="${table.id}"]`);
+            if (timer) {
+                timer.dataset.openedAt = table.active_session_opened_at || '';
+                if (!table.active_session_opened_at) timer.textContent = '';
+            }
             card.classList.remove(...statusClasses);
             card.classList.add(`status-${table.status}`);
             label.textContent = statusLabels[table.status] || table.status;
@@ -132,6 +155,8 @@ async function refreshTables() {
         console.warn('تعذر تحديث الطاولات', error);
     }
 }
+refreshTableTimers();
+setInterval(refreshTableTimers, 1000);
 setInterval(refreshTables, 5000);
 </script>
 @endpush

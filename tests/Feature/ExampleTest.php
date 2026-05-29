@@ -364,4 +364,34 @@ class ExampleTest extends TestCase
             ->assertDontSee($session->invoice_number)
             ->assertSee('<span>عدد الفواتير</span><strong>0</strong>', false);
     }
+
+    public function test_session_and_dashboard_show_elapsed_session_timer(): void
+    {
+        $cashier = User::factory()->create(['role' => 'cashier']);
+        $table = PosTable::create(['name' => 'طاولة مؤقت', 'section' => 'indoor', 'status' => 'busy']);
+        $session = CafeSession::create([
+            'user_id' => $cashier->id,
+            'pos_table_id' => $table->id,
+            'invoice_number' => 'INV-TIMER',
+            'status' => 'open',
+            'opened_at' => now()->subMinutes(12),
+        ]);
+
+        $this->actingAs($cashier)
+            ->get(route('sessions.show', $session))
+            ->assertOk()
+            ->assertSee('مدة الجلسة')
+            ->assertSee('session-timer');
+
+        $this->actingAs($cashier)
+            ->get(route('dashboard'))
+            ->assertOk()
+            ->assertSee('data-table-timer="'.$table->id.'"', false);
+
+        $this->actingAs($cashier)
+            ->getJson(route('tables.state'))
+            ->assertOk()
+            ->assertJsonPath('tables.0.active_session_opened_at', $session->opened_at->toIso8601String());
+    }
+
 }

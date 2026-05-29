@@ -7,7 +7,8 @@
     <section class="panel">
         <h1>جلسة {{ $session->invoice_number }}</h1>
         <p class="muted">الطاولة: {{ $session->tableName() }} | الموظف: {{ $session->user?->name ?? 'غير محدد' }} | الحالة: <span id="table-status">{{ $statuses[$session->tableStatus()] ?? $session->tableStatus() }}</span></p>
-        <div class="stats" style="grid-template-columns:repeat(3,minmax(0,1fr));">
+        <div class="stats" style="grid-template-columns:repeat(4,minmax(0,1fr));">
+            <div class="stat"><span>مدة الجلسة</span><strong id="session-timer">00:00:00</strong></div>
             <div class="stat"><span>المجموع قبل الخصم</span><strong id="subtotal">{{ number_format($session->subtotal, 2) }}</strong></div>
             <div class="stat"><span>الخصم</span><strong id="discount">{{ number_format($session->discount, 2) }}</strong></div>
             <div class="stat"><span>الإجمالي النهائي</span><strong id="total-price">{{ number_format($session->total_price, 2) }}</strong></div>
@@ -101,9 +102,25 @@
 @push('scripts')
 <script>
 const sessionClosed = @json(! $session->isOpen());
+const sessionOpenedAt = @json($session->opened_at?->toIso8601String());
+const sessionClosedAt = @json($session->closed_at?->toIso8601String());
 const statusLabels = @json($statuses);
 const csrf = document.querySelector('meta[name="csrf-token"]').content;
 const ordersBase = '{{ url('/orders') }}';
+function formatDuration(totalSeconds) {
+    const seconds = Math.max(0, Math.floor(totalSeconds));
+    const hours = String(Math.floor(seconds / 3600)).padStart(2, '0');
+    const minutes = String(Math.floor((seconds % 3600) / 60)).padStart(2, '0');
+    const remainingSeconds = String(seconds % 60).padStart(2, '0');
+    return `${hours}:${minutes}:${remainingSeconds}`;
+}
+function updateSessionTimer() {
+    const timer = document.getElementById('session-timer');
+    if (!timer || !sessionOpenedAt) return;
+    const start = new Date(sessionOpenedAt).getTime();
+    const end = sessionClosedAt ? new Date(sessionClosedAt).getTime() : Date.now();
+    timer.textContent = formatDuration((end - start) / 1000);
+}
 function escapeHtml(value) {
     return String(value).replace(/[&<>"']/g, (char) => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;'}[char]));
 }
@@ -142,6 +159,8 @@ async function refreshSession() {
         console.warn('تعذر تحديث الجلسة', error);
     }
 }
+updateSessionTimer();
+setInterval(updateSessionTimer, 1000);
 setInterval(refreshSession, 5000);
 </script>
 @endpush

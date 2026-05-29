@@ -56,7 +56,7 @@ class CafeSessionController extends Controller
 
     public function markBilling(CafeSession $cafeSession): RedirectResponse
     {
-        $this->abortIfClosed($cafeSession);
+        $this->abortIfNotOpen($cafeSession);
 
         $cafeSession->table?->update(['status' => 'billing']);
         OperationLog::record('تحويل الطاولة إلى الحساب', $cafeSession);
@@ -66,7 +66,7 @@ class CafeSessionController extends Controller
 
     public function close(Request $request, CafeSession $cafeSession): RedirectResponse
     {
-        $this->abortIfClosed($cafeSession);
+        $this->abortIfNotOpen($cafeSession);
 
         $data = $request->validate([
             'discount' => ['nullable', 'numeric', 'min:0', 'max:999999.99'],
@@ -92,6 +92,31 @@ class CafeSessionController extends Controller
         });
 
         return redirect()->route('sessions.invoice', $cafeSession)->with('status', 'تم إغلاق الجلسة وإرجاع الطاولة إلى متاحة.');
+    }
+
+    public function cancel(CafeSession $cafeSession): RedirectResponse
+    {
+        $this->abortIfNotOpen($cafeSession);
+
+        DB::transaction(function () use ($cafeSession): void {
+            $session = CafeSession::whereKey($cafeSession->id)->lockForUpdate()->firstOrFail();
+            $session->load(['table']);
+            $session->status = 'cancelled';
+            $session->closed_at = now();
+            $session->discount = 0;
+            $session->tip = 0;
+            $session->subtotal = 0;
+            $session->total_price = 0;
+            $session->save();
+
+            $session->table?->update(['status' => 'free']);
+            OperationLog::record('إلغاء جلسة', $session, [
+                'رقم الفاتورة' => $session->invoice_number,
+                'الطاولة' => $session->tableName(),
+            ]);
+        });
+
+        return redirect()->route('dashboard')->with('status', 'تم إلغاء الجلسة وإرجاع الطاولة إلى متاحة بدون احتساب مبيعات.');
     }
 
     public function invoice(CafeSession $cafeSession): View
@@ -204,8 +229,8 @@ class CafeSessionController extends Controller
         return $prefix.str_pad((string) $next, 4, '0', STR_PAD_LEFT);
     }
 
-    private function abortIfClosed(CafeSession $session): void
+    private function abortIfNotOpen(CafeSession $session): void
     {
-        abort_if($session->isClosed(), 422, 'لا يمكن تعديل جلسة مغلقة.');
+        abort_unless($session->isOpen(), 422, 'لا يمكن تعديل جلسة مغلقة أو ملغاة.');
     }
 }

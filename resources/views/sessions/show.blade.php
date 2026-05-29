@@ -20,7 +20,11 @@
             <form method="POST" action="{{ route('sessions.billing', $session) }}">
                 @csrf
                 @method('PATCH')
-                <button class="btn" @disabled($session->isClosed())>تحويل إلى قيد الحساب</button>
+                <button class="btn" @disabled(! $session->isOpen())>تحويل إلى قيد الحساب</button>
+            </form>
+            <form method="POST" action="{{ route('sessions.cancel', $session) }}" onsubmit="return confirm('هل تريد إلغاء الجلسة؟ لن تدخل في المبيعات وسيتم تحرير الطاولة.');">
+                @csrf
+                <button class="btn btn-danger" type="submit" @disabled(! $session->isOpen())>إلغاء الجلسة / كنسل الطاولة</button>
             </form>
             <a class="btn" href="{{ route('sessions.invoice', $session) }}">طباعة الفاتورة</a>
         </div>
@@ -28,7 +32,7 @@
             @csrf
             <input class="field" type="number" step="0.01" min="0" name="discount" value="{{ old('discount', $session->discount) }}" placeholder="الخصم">
             <input class="field" type="number" step="0.01" min="0" name="tip" value="{{ old('tip', $session->tip) }}" placeholder="إكرامية اختيارية">
-            <button class="btn btn-primary" type="submit" @disabled($session->isClosed())>إغلاق الجلسة</button>
+            <button class="btn btn-primary" type="submit" @disabled(! $session->isOpen())>إغلاق الجلسة</button>
         </form>
     </section>
 </div>
@@ -46,7 +50,7 @@
                             @csrf
                             <input type="hidden" name="menu_item_id" value="{{ $item->id }}">
                             <input type="hidden" name="quantity" value="1">
-                            <button class="menu-button" type="submit" @disabled($session->isClosed())>
+                            <button class="menu-button" type="submit" @disabled(! $session->isOpen())>
                                 <strong>{{ $item->name }}</strong>
                                 <span class="muted" style="display:block;margin-top:6px;">{{ number_format($item->price, 2) }}</span>
                             </button>
@@ -59,10 +63,10 @@
         <h3>طلب مخصص</h3>
         <form method="POST" action="{{ route('orders.store', $session) }}" class="grid grid-4">
             @csrf
-            <input class="field" name="item_name" placeholder="اسم الصنف" @disabled($session->isClosed())>
-            <input class="field" type="number" step="0.01" min="0" name="price" placeholder="السعر" @disabled($session->isClosed())>
-            <input class="field" type="number" min="1" name="quantity" value="1" placeholder="الكمية" @disabled($session->isClosed())>
-            <button class="btn btn-primary" type="submit" @disabled($session->isClosed())>إضافة الطلب</button>
+            <input class="field" name="item_name" placeholder="اسم الصنف" @disabled(! $session->isOpen())>
+            <input class="field" type="number" step="0.01" min="0" name="price" placeholder="السعر" @disabled(! $session->isOpen())>
+            <input class="field" type="number" min="1" name="quantity" value="1" placeholder="الكمية" @disabled(! $session->isOpen())>
+            <button class="btn btn-primary" type="submit" @disabled(! $session->isOpen())>إضافة الطلب</button>
         </form>
     </section>
 
@@ -74,16 +78,16 @@
                     <form id="update-order-{{ $order->id }}" method="POST" action="{{ route('orders.update', $order) }}" style="display:contents;">
                         @csrf
                         @method('PATCH')
-                        <input class="field" name="item_name" value="{{ $order->item_name }}" @disabled($session->isClosed())>
-                        <input class="field" type="number" step="0.01" min="0" name="price" value="{{ $order->price }}" @disabled($session->isClosed())>
-                        <input class="field" type="number" min="1" name="quantity" value="{{ $order->quantity }}" @disabled($session->isClosed())>
+                        <input class="field" name="item_name" value="{{ $order->item_name }}" @disabled(! $session->isOpen())>
+                        <input class="field" type="number" step="0.01" min="0" name="price" value="{{ $order->price }}" @disabled(! $session->isOpen())>
+                        <input class="field" type="number" min="1" name="quantity" value="{{ $order->quantity }}" @disabled(! $session->isOpen())>
                         <strong>{{ number_format($order->line_total, 2) }}</strong>
-                        <button class="btn btn-small" type="submit" @disabled($session->isClosed())>تحديث</button>
+                        <button class="btn btn-small" type="submit" @disabled(! $session->isOpen())>تحديث</button>
                     </form>
                     <form method="POST" action="{{ route('orders.destroy', $order) }}" style="grid-column:1 / -1;">
                         @csrf
                         @method('DELETE')
-                        <button class="btn btn-danger btn-small" type="submit" @disabled($session->isClosed())>حذف</button>
+                        <button class="btn btn-danger btn-small" type="submit" @disabled(! $session->isOpen())>حذف</button>
                     </form>
                 </div>
             @empty
@@ -96,7 +100,7 @@
 
 @push('scripts')
 <script>
-const sessionClosed = @json($session->isClosed());
+const sessionClosed = @json(! $session->isOpen());
 const statusLabels = @json($statuses);
 const csrf = document.querySelector('meta[name="csrf-token"]').content;
 const ordersBase = '{{ url('/orders') }}';

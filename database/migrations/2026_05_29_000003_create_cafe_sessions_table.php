@@ -13,7 +13,7 @@ return new class extends Migration
             $table->foreignId('user_id')->nullable()->constrained()->nullOnDelete();
             $table->foreignId('pos_table_id')->constrained('pos_tables')->restrictOnDelete();
             $table->string('invoice_number')->unique();
-            $table->enum('status', ['open', 'closed'])->default('open')->index();
+            $table->enum('status', ['open', 'closed', 'cancelled'])->default('open')->index();
             $table->timestamp('opened_at')->useCurrent();
             $table->timestamp('closed_at')->nullable()->index();
             $table->decimal('subtotal', 10, 2)->default(0);

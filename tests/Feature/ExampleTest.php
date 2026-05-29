@@ -305,4 +305,64 @@ class ExampleTest extends TestCase
             ->assertSee('إجمالي الشيشة: 2')
             ->assertSeeInOrder(['شيشة نعناع', '2']);
     }
+
+    public function test_admin_can_update_and_delete_menu_items(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $item = MenuItem::create(['name' => 'صنف قديم', 'category' => 'drink', 'price' => 1, 'is_active' => true]);
+
+        $this->actingAs($admin)
+            ->patch(route('menu-items.update', $item), [
+                'name' => 'صنف معدل',
+                'category' => 'food',
+                'price' => 2.5,
+                'is_active' => 1,
+            ])->assertSessionHasNoErrors()->assertRedirect();
+
+        $this->assertDatabaseHas(MenuItem::class, [
+            'id' => $item->id,
+            'name' => 'صنف معدل',
+            'category' => 'food',
+        ]);
+
+        $this->actingAs($admin)
+            ->delete(route('menu-items.destroy', $item))
+            ->assertRedirect();
+
+        $this->assertDatabaseMissing(MenuItem::class, ['id' => $item->id]);
+    }
+
+    public function test_open_session_can_be_cancelled_without_counting_sales(): void
+    {
+        $cashier = User::factory()->create(['role' => 'cashier']);
+        $admin = User::factory()->admin()->create();
+        $table = PosTable::create(['name' => 'طاولة كنسل', 'section' => 'indoor', 'status' => 'free']);
+        $item = MenuItem::create(['name' => 'كوكتيل - تجربة', 'category' => 'drink', 'price' => 3, 'is_active' => true]);
+
+        $this->actingAs($cashier)
+            ->post(route('tables.open', $table))
+            ->assertRedirect();
+
+        $session = CafeSession::firstOrFail();
+
+        $this->actingAs($cashier)
+            ->post(route('orders.store', $session), ['menu_item_id' => $item->id, 'quantity' => 2])
+            ->assertRedirect();
+
+        $this->actingAs($cashier)
+            ->post(route('sessions.cancel', $session))
+            ->assertRedirect(route('dashboard'));
+
+        $session = $session->fresh();
+        $this->assertSame('cancelled', $session->status);
+        $this->assertSame('free', $table->fresh()->status);
+        $this->assertEquals(0.00, (float) $session->total_price);
+
+        $this->actingAs($admin)
+            ->get(route('reports.daily'))
+            ->assertOk()
+            ->assertDontSee($session->invoice_number)
+            ->assertSee('<span>عدد الفواتير</span><strong>0</strong>', false);
+    }
+
 }

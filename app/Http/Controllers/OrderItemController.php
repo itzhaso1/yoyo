@@ -76,6 +76,6 @@ class OrderItemController extends Controller
 
     private function abortIfClosed(CafeSession $session): void
     {
-        abort_if($session->isClosed(), 422, 'لا يمكن تعديل طلبات جلسة مغلقة.');
+        abort_unless($session->isOpen(), 422, 'لا يمكن تعديل طلبات جلسة مغلقة أو ملغاة.');
     }
 }

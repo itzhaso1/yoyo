@@ -63,13 +63,33 @@ class CafeSession extends Model
         return $this->hasMany(OrderItem::class);
     }
 
+    public function isOpen(): bool
+    {
+        return $this->status === 'open';
+    }
+
     public function isClosed(): bool
     {
         return $this->status === 'closed';
     }
 
+    public function isCancelled(): bool
+    {
+        return $this->status === 'cancelled';
+    }
+
     public function recalculateTotals(): void
     {
+        if ($this->isCancelled()) {
+            $this->subtotal = 0;
+            $this->discount = 0;
+            $this->tip = 0;
+            $this->total_price = 0;
+            $this->save();
+
+            return;
+        }
+
         $subtotal = $this->orderItems->sum(
             fn (OrderItem $item): float => (float) $item->price * (int) $item->quantity
         );

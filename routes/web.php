@@ -27,6 +27,7 @@ Route::middleware('auth')->group(function (): void {
     Route::get('/sessions/{cafeSession}/state', [CafeSessionController::class, 'state'])->name('sessions.state');
     Route::patch('/sessions/{cafeSession}/billing', [CafeSessionController::class, 'markBilling'])->name('sessions.billing');
     Route::post('/sessions/{cafeSession}/close', [CafeSessionController::class, 'close'])->name('sessions.close');
+    Route::post('/sessions/{cafeSession}/cancel', [CafeSessionController::class, 'cancel'])->name('sessions.cancel');
     Route::get('/sessions/{cafeSession}/invoice', [CafeSessionController::class, 'invoice'])->name('sessions.invoice');
 
     Route::post('/sessions/{cafeSession}/orders', [OrderItemController::class, 'store'])->name('orders.store');

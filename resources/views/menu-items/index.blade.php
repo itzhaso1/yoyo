@@ -37,10 +37,10 @@
                     <label style="display:flex;gap:6px;align-items:center;"><input type="checkbox" name="is_active" value="1" @checked($item->is_active)> فعال</label>
                     <button class="btn btn-small" type="submit">حفظ</button>
                 </form>
-                <form method="POST" action="{{ route('menu-items.destroy', $item) }}" style="grid-column:1 / -1;">
+                <form method="POST" action="{{ route('menu-items.destroy', $item) }}" style="grid-column:1 / -1;" onsubmit="return confirm('هل أنت متأكد من حذف هذا الصنف من المنيو؟');">
                     @csrf
                     @method('DELETE')
-                    <button class="btn btn-danger btn-small" type="submit">تعطيل الصنف</button>
+                    <button class="btn btn-danger btn-small" type="submit">حذف الصنف</button>
                 </form>
             </div>
         @endforeach

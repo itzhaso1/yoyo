@@ -52,9 +52,9 @@ class MenuItemController extends Controller
 
     public function destroy(MenuItem $menuItem): RedirectResponse
     {
-        $menuItem->update(['is_active' => false]);
-        OperationLog::record('تعطيل صنف', $menuItem);
+        OperationLog::record('حذف صنف', $menuItem, ['name' => $menuItem->name]);
+        $menuItem->delete();
 
-        return back()->with('status', 'تم تعطيل الصنف مع الحفاظ على سجل الفواتير القديمة.');
+        return back()->with('status', 'تم حذف الصنف من المنيو. الفواتير القديمة تبقى محفوظة باسم الصنف وسعره.');
     }
 }

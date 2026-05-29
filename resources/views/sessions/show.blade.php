@@ -6,7 +6,7 @@
 <div class="grid grid-2">
     <section class="panel">
         <h1>جلسة {{ $session->invoice_number }}</h1>
-        <p class="muted">الطاولة: {{ $session->table->name }} | الموظف: {{ $session->user?->name ?? 'غير محدد' }} | الحالة: <span id="table-status">{{ $statuses[$session->table->status] ?? $session->table->status }}</span></p>
+        <p class="muted">الطاولة: {{ $session->tableName() }} | الموظف: {{ $session->user?->name ?? 'غير محدد' }} | الحالة: <span id="table-status">{{ $statuses[$session->tableStatus()] ?? $session->tableStatus() }}</span></p>
         <div class="stats" style="grid-template-columns:repeat(3,minmax(0,1fr));">
             <div class="stat"><span>المجموع قبل الخصم</span><strong id="subtotal">{{ number_format($session->subtotal, 2) }}</strong></div>
             <div class="stat"><span>الخصم</span><strong id="discount">{{ number_format($session->discount, 2) }}</strong></div>

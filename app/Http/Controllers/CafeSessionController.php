@@ -58,7 +58,7 @@ class CafeSessionController extends Controller
     {
         $this->abortIfClosed($cafeSession);
 
-        $cafeSession->table->update(['status' => 'billing']);
+        $cafeSession->table?->update(['status' => 'billing']);
         OperationLog::record('تحويل الطاولة إلى الحساب', $cafeSession);
 
         return back()->with('status', 'تم تحويل الطاولة إلى مرحلة الحساب.');
@@ -84,7 +84,7 @@ class CafeSessionController extends Controller
             $session->closed_at = now();
             $session->save();
 
-            $session->table->update(['status' => 'free']);
+            $session->table?->update(['status' => 'free']);
             OperationLog::record('إغلاق جلسة', $session, [
                 'رقم الفاتورة' => $session->invoice_number,
                 'الإجمالي' => $session->total_price,
@@ -111,7 +111,7 @@ class CafeSessionController extends Controller
                 'id' => $cafeSession->id,
                 'invoice_number' => $cafeSession->invoice_number,
                 'status' => $cafeSession->status,
-                'table_status' => $cafeSession->table->status,
+                'table_status' => $cafeSession->tableStatus(),
                 'subtotal' => number_format((float) $cafeSession->subtotal, 2, '.', ''),
                 'discount' => number_format((float) $cafeSession->discount, 2, '.', ''),
                 'tip' => number_format((float) $cafeSession->tip, 2, '.', ''),

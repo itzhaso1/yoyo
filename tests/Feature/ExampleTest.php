@@ -236,4 +236,38 @@ class ExampleTest extends TestCase
             ->assertSeeInOrder(['شيك', 'شيك - موز'])
             ->assertSeeInOrder(['شيشة', 'شيشة نعناع']);
     }
+
+    public function test_daily_report_and_invoice_handle_soft_deleted_tables(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $table = PosTable::create(['name' => 'طاولة محذوفة سابقاً', 'section' => 'indoor', 'status' => 'free']);
+        $session = CafeSession::create([
+            'user_id' => $admin->id,
+            'pos_table_id' => $table->id,
+            'invoice_number' => 'INV-DELETED-TABLE',
+            'status' => 'closed',
+            'opened_at' => now()->subHour(),
+            'closed_at' => now(),
+            'subtotal' => 5,
+            'total_price' => 5,
+        ]);
+        $session->orderItems()->create([
+            'item_name' => 'قهوة اختبار',
+            'price' => 5,
+            'quantity' => 1,
+        ]);
+
+        $table->delete();
+
+        $this->actingAs($admin)
+            ->get(route('reports.daily'))
+            ->assertOk()
+            ->assertSee('INV-DELETED-TABLE')
+            ->assertSee('طاولة محذوفة سابقاً');
+
+        $this->actingAs($admin)
+            ->get(route('sessions.invoice', $session))
+            ->assertOk()
+            ->assertSee('طاولة محذوفة سابقاً');
+    }
 }

@@ -13,7 +13,7 @@
     <p style="text-align:center;margin:6px 0 18px;">فاتورة ضريبية مبسطة</p>
     <div style="display:grid;gap:5px;font-size:14px;">
         <span>رقم الفاتورة: <strong>{{ $session->invoice_number }}</strong></span>
-        <span>الطاولة: {{ $session->table->name }}</span>
+        <span>الطاولة: {{ $session->tableName() }}</span>
         <span>الموظف: {{ $session->user?->name ?? '-' }}</span>
         <span>وقت الفتح: {{ $session->opened_at?->format('Y-m-d H:i') }}</span>
         <span>وقت الإغلاق: {{ $session->closed_at?->format('Y-m-d H:i') ?? '-' }}</span>

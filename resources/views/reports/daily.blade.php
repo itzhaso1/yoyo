@@ -55,7 +55,7 @@
             @foreach($sessions as $session)
                 <tr>
                     <td><a href="{{ route('sessions.invoice', $session) }}">{{ $session->invoice_number }}</a></td>
-                    <td>{{ $session->table->name }}</td>
+                    <td>{{ $session->tableName() }}</td>
                     <td>{{ $session->user?->name ?? '-' }}</td>
                     <td>{{ $session->closed_at?->format('H:i') }}</td>
                     <td>{{ number_format($session->total_price, 2) }}</td>

@@ -38,7 +38,17 @@ class CafeSession extends Model
 
     public function table()
     {
-        return $this->belongsTo(PosTable::class, 'pos_table_id');
+        return $this->belongsTo(PosTable::class, 'pos_table_id')->withTrashed();
+    }
+
+    public function tableName(): string
+    {
+        return $this->table?->name ?? 'طاولة محذوفة';
+    }
+
+    public function tableStatus(): string
+    {
+        return $this->table?->status ?? 'free';
     }
 
     public function orderItems()
